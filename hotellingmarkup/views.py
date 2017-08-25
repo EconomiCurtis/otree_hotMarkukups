@@ -150,7 +150,7 @@ class task(Page):
             'id_in_group':self.player.id_in_group,
             'subperiod_timer':subperiod_timer,
             'transport_cost':self.player.transport_cost,
-            'round':self.player.subperiod_number+1,
+            'round':self.player.subperiod_number,
             'num_rounds':Constants.num_rounds,
             'my_loc':self.player.loc,
             'my_prev_price':my_prev_price,
