@@ -2,15 +2,25 @@
 {% load staticfiles otree_tags %}
 {% load multiply %}
 
-
 {% block title %}
     Period {{period_num}} - Round {{round}}
 {% endblock %}
 
+{% block global_scripts  %}
 
+{{ block.super }}
 
-{% block content %}
-<!--  of {{num_rounds}} -->
+<!-- otree-redwood realtime extensions -->
+<link rel="import" href="/static/bower_components/polymer/polymer.html">
+<link rel="import" href="/static/otree-redwood/webcomponents/otree-continuous-decision/otree-continuous-decision.html">
+<link rel="import" href="/static/otree-redwood/webcomponents/otree-period/otree-period.html">
+<!-- end otree-redwood realtime extensions -->
+
+{% endblock %}
+
+{% block global_styles  %}
+
+{{ block.super }}
 
 <style type="text/css">
 .tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;}
@@ -21,6 +31,11 @@
 .tg .tg-031e{text-align:center}
 .tg .tg-031r{text-align:center}
 </style>
+
+{% endblock %}
+
+{% block content %}
+<!--  of {{num_rounds}} -->
 
 <table class="tg">
   <tr>
@@ -193,6 +208,29 @@ excludedplayers_full:
 
 <input class="btn btn-primary btn-large btn-primary next-button" type="submit" value="Next"  style=" visibility:hidden;">
 
+<!-- otree-redwood realtime extensions -->
+<otree-continuous-decision></otree-continuous-decision>
+<otree-period></otree-period>
+<script>
+    // Set up oTree variable used by the otree-redwood components.
+    var oTree = oTree || {};
+    (function() {
+        oTree.group = parseInt("{{ player.group.pk }}");
+        oTree.group = isNaN(oTree.group) ? null : oTree.group;
+        oTree.role = "{{ player.role }}";
+        oTree.participantCode = "{{ player.participant.code }}";
+        oTree.appName = "{{ subsession.app_name }}";
+        oTree.idInGroup = "{{ player.id_in_group }}";
+        oTree.csrfToken = "{{ csrf_token }}";
+        {% if view.is_debug %}
+        oTree.debug = true;
+        {% else %}
+        oTree.debug = false;
+        {% endif %}
+   })();
+ </script>
+<!-- end otree-redwood realtime extensions -->
+
 <script>
 
 var linecolors = ['#d84949', '#4850d8', '#ce48d8', '#5bd848', '#d8d348', '#3bccc2', '#48d8c2', '#d8a848'];
@@ -275,8 +313,6 @@ function sliderChange_2(val) {
     // var t = 1;
     // var intersection = (Number(val));
     // var market_share = "";
-
-
 
 }
 
@@ -1084,11 +1120,6 @@ function countdown( elementName, minutes, seconds )
 }
 
 countdown( "countdown", 0, {{subperiod_timer}});
-countdown( "countdown2", 100, 0 );
-
-
-
-
 
 </script>
 

@@ -13,6 +13,7 @@ from otree.api import (
     models, widgets, BaseConstants, BaseSubsession, BaseGroup, BasePlayer,
     Currency as c, currency_range
 )
+from otree_redwood.models import Event, ContinuousDecisionGroup
 import random
 # </standard imports>
 
@@ -105,7 +106,13 @@ class Subsession(BaseSubsession):
 				p.loc = p.participant.vars["loc"] = ((1 / players_per_group)/2) + ((p.id_in_group - 1) * (1 / players_per_group)) 
 
 
-class Group(BaseGroup):
+class Group(ContinuousDecisionGroup):
+
+	def period_length(self):
+		return self.session.config['subperiod_time']
+
+	def initial_decision(self):
+		return None
 
 	def set_payoffs(self):
 		"""calculate payoffs in round"""
