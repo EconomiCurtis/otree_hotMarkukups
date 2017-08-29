@@ -83,7 +83,7 @@
 .tg .tg-curPlayer{vertical-align:top;padding:10px;background-color:#9aff99;text-align:center;}
 </style>
 
-<!------------------------------------------------------------------------------>
+<!-- Start Debug -->
 
 {% if debug %}
 In Debug Mode Only:
@@ -183,7 +183,7 @@ excludedplayers_full:
 
 {{ form.boundary_hi.errors }}
 
-{% endif %}
+{% endif %} <!-- End Debug -->
 
 <input  class='btn round_payoff-button' 
         class='form-control' 
@@ -894,15 +894,17 @@ function payoff_function(players_sml){
 
     }
 
-    document.getElementById('id_intersections_rp').innerHTML = JSON.stringify(intersections_rp);
+    if (oTree.debug) {
+        document.getElementById('id_intersections_rp').innerHTML = JSON.stringify(intersections_rp);
 
-    document.getElementById('id_question').innerHTML = JSON.stringify(intersections);
-    document.getElementById('id_question2').innerHTML = JSON.stringify(intersectionstest);
-    document.getElementById('id_question3').innerHTML = JSON.stringify(intersections2);
-    document.getElementById('id_question4').innerHTML = JSON.stringify(boundaries);
-    document.getElementById('id_question5').innerHTML = JSON.stringify(excludedplayers_full);
-    document.getElementById('id_rp_dists').innerHTML = JSON.stringify(rp_dists);
-    document.getElementById('id_intersection_dists').innerHTML = JSON.stringify(intersection_dists);
+        document.getElementById('id_question').innerHTML = JSON.stringify(intersections);
+        document.getElementById('id_question2').innerHTML = JSON.stringify(intersectionstest);
+        document.getElementById('id_question3').innerHTML = JSON.stringify(intersections2);
+        document.getElementById('id_question4').innerHTML = JSON.stringify(boundaries);
+        document.getElementById('id_question5').innerHTML = JSON.stringify(excludedplayers_full);
+        document.getElementById('id_rp_dists').innerHTML = JSON.stringify(rp_dists);
+        document.getElementById('id_intersection_dists').innerHTML = JSON.stringify(intersection_dists);
+    }
 
     return players_full;
 }
