@@ -227,6 +227,10 @@ excludedplayers_full:
         {% else %}
         oTree.debug = false;
         {% endif %}
+        oTree.group_members = {};
+        {% for player in player.group.get_players %}
+            oTree.group_members["{{ player.participant.code }}"] = {{ player.id_in_group }};
+        {% endfor %}
    })();
  </script>
 <!-- end otree-redwood realtime extensions -->
@@ -259,10 +263,10 @@ function log_data(val){
     $('<input>').attr({
         type: 'hidden',
         name: 'round_payoff',
-        value: players[{{id_in_group}}-1].profit
+        value: players[id_in_group-1].profit
     }).appendTo('form');
 
-    if (players[{{id_in_group}}-1].boundary_lo == null){
+    if (players[id_in_group-1].boundary_lo == null){
     $('<input>').attr({
         type: 'hidden',
         name: 'boundary_lo',
@@ -277,30 +281,51 @@ function log_data(val){
         $('<input>').attr({
             type: 'hidden',
             name: 'boundary_lo',
-            value: players[{{id_in_group}}-1].boundary_lo
+            value: players[id_in_group-1].boundary_lo
             }).appendTo('form');
         $('<input>').attr({
             type: 'hidden',
             name: 'boundary_hi',
-            value: players[{{id_in_group}}-1].boundary_hi
+            value: players[id_in_group-1].boundary_hi
         }).appendTo('form');
     }
 
 };
 
+var continuousDecision = document.querySelector('otree-continuous-decision');
 
 // slider event triggerer
 // trigger updates to canvas image
 function sliderChange(val){
     var my_p = {{ my_prev_price|json}};
-    if (val != undefined) {
+    if (val !== undefined) {
         my_p = (Number(val)).toFixed(3);
     }
     sliderChange_2(my_p);
     document.getElementById('next_subperiod_price_text').innerHTML = (my_p * 100).toFixed(0);
     draw(my_p);
+    continuousDecision.myDecision = my_p;
     return my_p;
 }
+
+function animate(timestamp) {
+    for (let pcode in oTree.group_members) {
+        if (continuousDecision.groupDecisions === undefined) {
+            window.requestAnimationFrame(animate);
+            return;
+        }
+        let p = continuousDecision.groupDecisions[pcode];
+        if (p === undefined) {
+            window.requestAnimationFrame(animate);
+            return;
+        }
+        plyrs[oTree.group_members[pcode]-1].loc = p;
+    }
+    draw(continuousDecision.myDecision);
+    window.requestAnimationFrame(animate);
+}
+
+window.requestAnimationFrame(animate);
 
 // slider triggers -> update table elements
 function sliderChange_2(val) {
@@ -879,9 +904,15 @@ function payoff_function(players_sml){
     document.getElementById('id_rp_dists').innerHTML = JSON.stringify(rp_dists);
     document.getElementById('id_intersection_dists').innerHTML = JSON.stringify(intersection_dists);
 
-
     return players_full;
 }
+
+var plyrs = {{ players|json }};
+var my_prev_price = {{ my_prev_price|json }};
+var id_in_group = {{ id_in_group }};
+var t = Number({{ player.transport_cost|json }});
+var mc = Number({{ player.mc|json }});
+var rp = Number({{ player.rp|json }});
 
 var players = []; // better ways to do this, but needed for auto submit below....
 function draw(my_p_) {
@@ -892,8 +923,8 @@ function draw(my_p_) {
     }
 
     // // setup variables
-    var n = {{players|json}}.length;
-    var my_p = ({{ my_prev_price|json}}).toFixed(2);
+    var n = plyrs.length;
+    var my_p = my_prev_price.toFixed(2);
     if (my_p_ != undefined) {
         my_p = Number(my_p_).toFixed(2);
     }
@@ -912,19 +943,14 @@ function draw(my_p_) {
         });
     }
 
-    plyrs = {{players|json}}
     for(var i=0; i<n; i++) {
         players[i].id = Number(plyrs[i]['id']).toFixed(0);
         players[i].loc = Number(plyrs[i]['loc']).toFixed(5);
         players[i].price = Number(plyrs[i]['price']).toFixed(4);
     }
-    players[{{id_in_group}}-1].price = my_p; //update my price as
+    players[id_in_group-1].price = my_p; //update my price as
 
     // payoff function calc
-    var t = Number({{ player.transport_cost|json }});
-    var mc = Number({{ player.mc|json }});
-    var rp = Number({{ player.rp|json }});
-
     var players_sml = [];
     for (var i=0; i<n; i++){
         players_sml.push({
@@ -966,7 +992,6 @@ function draw(my_p_) {
 
     }
 
-
     // DRAW Area!
     var ctx = canvas.getContext('2d');
 
@@ -984,72 +1009,70 @@ function draw(my_p_) {
         drawShoppingLines(players,i,ht,wdt,mrg,t,mc,rp, false);
         drawBall(players,i,ht,wdt,mrg);
     }
- 
-
 
     // // emphasize current player's point of view
-    drawBoundry(players[{{id_in_group}}-1].boundary_hi,wdt,ht,mrg);
-    drawBoundry(players[{{id_in_group}}-1].boundary_lo,wdt,ht,mrg);
-    drawShoppingLines(players,{{id_in_group}}-1,ht,wdt,mrg,t,mc, true);
-    drawFullBall(players[{{id_in_group}}-1].price,players[{{id_in_group}}-1].loc,ht,wdt,mrg);
+    drawBoundry(players[id_in_group-1].boundary_hi, wdt, ht, mrg);
+    drawBoundry(players[id_in_group-1].boundary_lo, wdt, ht, mrg);
+    drawShoppingLines(players, id_in_group-1, ht, wdt, mrg, t, mc, true);
+    drawFullBall(players[id_in_group-1].price, players[id_in_group-1].loc, ht, wdt, mrg);
 
 
     // draw boundries
     // function drawBox(price, loc_lo, loc_hi, ht, wdt, mrg ){
     // emphasize current player's point of view
 
-    if (players[{{id_in_group}}-1].boundary_lo == null) {
+    if (players[id_in_group-1].boundary_lo == null) {
 
     } else {
-        if (players[{{id_in_group}}-1].boundary_lo == 0 && players[{{id_in_group}}-1].boundary_hi == 1) {
+        if (players[id_in_group-1].boundary_lo == 0 && players[id_in_group-1].boundary_hi == 1) {
             drawFullBox(
-                players[{{id_in_group}}-1].price, 
+                players[id_in_group-1].price, 
                 0, 1, 
                 ht, wdt, mrg, mc);
         } else {
             // to the left of one's loc
-            if (players[{{id_in_group}}-1].boundary_lo < players[{{id_in_group}}-1].loc) {
+            if (players[id_in_group-1].boundary_lo < players[id_in_group-1].loc) {
                 drawFullBox(
-                    players[{{id_in_group}}-1].price, 
-                    players[{{id_in_group}}-1].boundary_lo, 
-                    players[{{id_in_group}}-1].loc, 
+                    players[id_in_group-1].price, 
+                    players[id_in_group-1].boundary_lo, 
+                    players[id_in_group-1].loc, 
                     ht, wdt, mrg, mc);
             } 
 
             // to the right of one's loc
-            if (players[{{id_in_group}}-1].boundary_hi > players[{{id_in_group}}-1].loc) {
+            if (players[id_in_group-1].boundary_hi > players[id_in_group-1].loc) {
                 drawFullBox(
-                    players[{{id_in_group}}-1].price, 
-                    players[{{id_in_group}}-1].loc, 
-                    players[{{id_in_group}}-1].boundary_hi, 
+                    players[id_in_group-1].price, 
+                    players[id_in_group-1].loc, 
+                    players[id_in_group-1].boundary_hi, 
                     ht, wdt, mrg, mc);
             }
 
             // to the right, and wrap around
-            if (players[{{id_in_group}}-1].boundary_hi < players[{{id_in_group}}-1].loc) {
+            if (players[id_in_group-1].boundary_hi < players[id_in_group-1].loc) {
                 drawFullBox(
-                    players[{{id_in_group}}-1].price, 
+                    players[id_in_group-1].price, 
                     0, 
-                    players[{{id_in_group}}-1].boundary_hi, 
+                    players[id_in_group-1].boundary_hi, 
                     ht, wdt, mrg, mc);
                 drawFullBox(
-                    players[{{id_in_group}}-1].price, 
-                    players[{{id_in_group}}-1].loc, 
+                    players[id_in_group-1].price, 
+                    players[id_in_group-1].loc, 
                     1, 
                     ht, wdt, mrg, mc);
             }
 
             // to the left, and wrap around
-            if (players[{{id_in_group}}-1].boundary_lo > players[{{id_in_group}}-1].loc) {
+            if (players[id_in_group-1].boundary_lo > players[id_in_group-1].loc) {
                 drawFullBox(
-                    players[{{id_in_group}}-1].price, 
-                    players[{{id_in_group}}-1].boundary_lo, 
+                    players[id_in_group-1].price, 
+                    players[id_in_group-1].boundary_lo, 
                     1, 
                     ht, wdt, mrg, mc);
                 drawFullBox(
-                    players[{{id_in_group}}-1].price, 
+                    players[id_in_group-1].price, 
                     0,
-                    players[{{id_in_group}}-1].loc, 
+                    players[id_in_group-1].loc, 
                     ht, wdt, mrg, mc);
             }
         }
