@@ -50,7 +50,7 @@
     <td class="tg-031e" colspan="1" width="100px">
         <input type="range" orient="vertical" name="next_subperiod_price" step="0.01" min="0" max="1"
         id="id_next_subperiod_price" value={{ my_prev_price }} class="form-control"
-        oninput="sliderChange(this.value)" >
+        onchange="sliderChange(this.value)" >
     </td>
 
 
@@ -303,7 +303,7 @@ function sliderChange(val){
     }
     sliderChange_2(my_p);
     document.getElementById('next_subperiod_price_text').innerHTML = (my_p * 100).toFixed(0);
-    draw(my_p);
+    //draw(my_p);
     continuousDecision.myDecision = my_p;
     return my_p;
 }
@@ -319,7 +319,7 @@ function animate(timestamp) {
             window.requestAnimationFrame(animate);
             return;
         }
-        plyrs[oTree.group_members[pcode]-1].loc = p;
+        plyrs[oTree.group_members[pcode]-1].price = p;
     }
     draw(continuousDecision.myDecision);
     window.requestAnimationFrame(animate);
