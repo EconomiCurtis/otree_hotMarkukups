@@ -18,9 +18,11 @@ services:
       context: .
     environment:
       - OTREE_PRODUCTION=1
+      - OTREE_ADMIN_PASSWORD="123456"
+      - OTREE_AUTH_LEVEL="STUDY"
       - DATABASE_URL=postgres://postgres@postgres:5432/postgres
       - REDIS_URL=redis://redis:6379
-    command: bash -c 'OTREE_ADMIN_PASSWORD="123456" OTREE_AUTH_LEVEL="STUDY" nohup  otree runprodserver --port=8001 &'
+    command: bash -c 'nohup  otree runprodserver --port=8001 &'
     volumes:
       - .:/code
     ports:
