@@ -6,3 +6,6 @@ Otree Experiment, hotelling markups
 > source venv/bin/activate
 > pip install -r requirements_server.txt
 '''
+
+
+See DOCKER.md for docker instructions. 
