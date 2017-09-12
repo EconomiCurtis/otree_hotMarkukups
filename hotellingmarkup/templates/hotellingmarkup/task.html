@@ -24,7 +24,8 @@
 <table class="tg">
   <tr>
     <th class="tg-top" colspan="5" width="500px"><h2>Round timer: <font color="red"><div style="display: inline" id="countdown"></div></font></th>
-    <th class="tg-lqy6" colspan="5" width="500px"><h2 >Period score: {{cumulative_round_payoff|floatformat:"3"}}</th>
+    <th class="tg-lqy6" colspan="5" width="500px"><h2 >Period score: 
+        <span name="current points" id="id_cumulativePoints">...</span></th>
   </tr>
 </table>
 
@@ -80,6 +81,8 @@
 
 {% if debug %}
 In Debug Mode Only:
+
+<p> || Shopping Cost, t: {{player.transport_cost|json}} || Mill Cost, mc: {{player.mc|json}} || Reserve Price, rp: {{player.rp|json}}</p>
 
 <p><span name="question" id="id_question6">...</span></p>
 <p><span name="question" id="id_question7">...</span></p>
@@ -230,6 +233,7 @@ var linecolors = ['#d84949', '#4850d8', '#ce48d8', '#5bd848', '#d8d348', '#3bccc
 // log payoffs and other info from previous round into otree data
  $(window).bind("load", function() {
    log_data();
+
 });
 
 function log_data(val){
@@ -278,7 +282,7 @@ function log_data(val){
         }).appendTo('form');
     }
 
-
+    document.getElementById('id_cumulativePoints').innerHTML = (Number({{cumulative_round_payoff}}) + players[{{id_in_group}}-1].profit).toFixed(1);
 
 };
 
@@ -769,9 +773,9 @@ function payoff_function(players_sml){
 
         // set excluded playeys' boundaries to null,null
         for(var j=0; j<n; j++) {
-            if (   ( intersections2[i][(n-1-j)] >= 0 && intersections2[i][(n+1+j)] > 0) 
-                || ( intersections2[i][(n-1-j)] < 0 && intersections2[i][(n+1+j)] <= 0) 
-                || ( intersections2[i][(n-1-j)] >= 0 && intersections2[i][(n+1+j)] <= 0) ){
+            if (   ( intersections2[i][(n-1-j)] > 0 && intersections2[i][(n+1+j)] > 0) 
+                || ( intersections2[i][(n-1-j)] < 0 && intersections2[i][(n+1+j)] < 0) 
+                || ( intersections2[i][(n-1-j)] > 0 && intersections2[i][(n+1+j)] < 0) ){
                 boundaries[i][0] = null;
                 boundaries[i][1] = null;
             }

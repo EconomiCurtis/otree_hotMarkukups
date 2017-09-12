@@ -31,55 +31,82 @@ doc = """
 class Constants(BaseConstants):
     name_in_url = 'task'
     task_timer = 5 #see Subsession, before_session_starts setting. 
-    num_rounds = 300
-    players_per_group = 4
+    num_rounds = 400 # NEEDS TO BE Periods (15) * subperiods-per-period (20)
+    players_per_group = None
     transport_cost = 0.1
 
 class Subsession(BaseSubsession):
 
-	def before_session_starts(self):
+	def creating_session(self):
 
+		players = self.get_players()
+		players_per_group = self.session.config['players_per_group']
 		numSubperiods = self.session.config['numSubperiods']
 
 		for p in self.get_players():
-
-			# sep Period Numbers
+			# set Period and SubPeriod Numbers
 			if self.round_number == 1:
 				p.period_number = 1
 				p.subperiod_number = 0
 			elif (((self.round_number - 1) / (numSubperiods + 1)) % 1 != 0):
+				#if still within period defined by numSubperiods;
 				p.period_number = p.in_round(self.round_number - 1).period_number
 				p.subperiod_number = p.in_round(self.round_number - 1).subperiod_number + 1
 			else: 
+				#tick period up one
 				p.period_number = p.in_round(self.round_number - 1).period_number + 1
 				p.subperiod_number = 0
 
+
+		#### GROUPING #########################
+		# Set Groups based on Period Numbers. 
+		self.group_randomly()
+		group_matrix = []
+		for i in range(0, len(players), players_per_group):
+			group_matrix.append(players[i:i+players_per_group])
+		self.set_group_matrix(group_matrix)
+
+
+		for p in self.get_players():
+
+			########################	
 			# configure t, mc and rp
+			########################
 
-			# if initial subperiod. 
-			if p.subperiod_number == 0:
-				periodIndex = (p.period_number - 1)
-				p.transport_cost = self.session.config['t'][periodIndex][0]
-				p.mc = self.session.config['mc'][periodIndex][0]
-				p.rp = self.session.config['rp'][periodIndex][0]
+			# Set shopping costs / transport costs
+			periodIndex = (p.period_number - 1)
+			if p.period_number <= len(self.session.config['t']):  #if period exits
+				
+				if p.subperiod_number == 0: # if initial subperiod, just set to subpeeriod 1
+					subperiodIndex = (p.subperiod_number % len(self.session.config['t'][periodIndex]))
+					p.transport_cost = self.session.config['t'][periodIndex][0]
 
-			else: 
-				if p.period_number <= len(self.session.config['t']):
-					periodIndex = (p.period_number - 1)
+				else:
 					subperiodIndex = (p.subperiod_number % len(self.session.config['t'][periodIndex]))
 					p.transport_cost = self.session.config['t'][periodIndex][subperiodIndex - 1]
 
 
-				if p.period_number <= len(self.session.config['mc']):
-					periodIndex = (p.period_number - 1)
+			# set mill costs, marginal cost to firm. 
+			if p.period_number <= len(self.session.config['mc']):
+
+				if p.subperiod_number == 0: # if initial subperiod. 
+					subperiodIndex = (p.subperiod_number % len(self.session.config['mc'][periodIndex]))
+					p.mc = self.session.config['mc'][periodIndex][0]
+
+				else: 
 					subperiodIndex = (p.subperiod_number % len(self.session.config['mc'][periodIndex]))
 					p.mc = self.session.config['mc'][periodIndex][subperiodIndex - 1]
 
+			# set reservation prices, max price consumer willing to pay
+			if p.period_number <= len(self.session.config['rp']): #if period exists
 
-				if p.period_number <= len(self.session.config['rp']):
-					periodIndex = (p.period_number - 1)
+				if p.subperiod_number == 0: # if initial subperiod. 
+					subperiodIndex = (p.subperiod_number % len(self.session.config['rp'][periodIndex]))
+					p.rp = self.session.config['rp'][periodIndex][0]
+				else:
 					subperiodIndex = (p.subperiod_number % len(self.session.config['rp'][periodIndex]))
 					p.rp = self.session.config['rp'][periodIndex][subperiodIndex - 1]
+
 
 			p.subperiod_time = self.session.config['subperiod_time']
 
@@ -94,14 +121,13 @@ class Subsession(BaseSubsession):
 				else:
 					self.group_like_round(self.round_number - 1)
 
-
+		# set locations (must occur after groups are set)
 		for p in self.get_players():
 
 			if p.period_number <= len(self.session.config['t']):
 				#set loc based on player id
-				p.loc = p.participant.vars["loc"] = ((1 / Constants.players_per_group)/2) + ((p.id_in_group - 1) * (1 / Constants.players_per_group)) 
+				p.loc = p.participant.vars["loc"] = ((1 / players_per_group)/2) + ((p.id_in_group - 1) * (1 / players_per_group)) 
 
-	
 
 
 

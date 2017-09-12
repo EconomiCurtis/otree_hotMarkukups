@@ -64,7 +64,7 @@ USE_POINTS = False
 LANGUAGE_CODE = 'en'
 
 # if an app is included in SESSION_CONFIGS, you don't need to list it here
-INSTALLED_APPS = ['otree', 'otree_redwood', 'django_extensions']
+INSTALLED_APPS = ['otree']
 
 # SENTRY_DSN = ''
 
@@ -86,6 +86,16 @@ ROOMS = [
         'name': 'leeps',
         'display_name': 'LEEPS Lab 1-12',
         'participant_label_file': '_rooms/leeps.txt',
+    },    
+    {
+        'name': 'ssel_b_side',
+        'display_name': 'SSEL Desktops B01 - B24 - The B-Sides',
+        'participant_label_file': '_rooms/ssel_b_side.txt',
+    },
+    {
+        'name': 'ssel_a_team',
+        'display_name': 'SSEL Desktops A01 - A24 - The A-Team',
+        'participant_label_file': '_rooms/ssel_a_team.txt',
     },
     # {
     #     'name': 'econ101',
@@ -145,6 +155,7 @@ SESSION_CONFIGS = [
             'hotellingmarketup_00',
             'hotellingmarkup'
         ],
+        'players_per_group': 4,
         'num_demo_participants':4, # number of participants per group set in  models
 
         'loc':None, # set with array [], if None, then spaced (1/N)/2 apart
@@ -153,7 +164,7 @@ SESSION_CONFIGS = [
 
         'numSubperiods' :20, # number of subperiods in a period. 
         # if large, ensure 'num_rounds' in models is sufficently large
-        'subperiod_time': 10, # length, in seconds, of a subperiod
+        'subperiod_time': 100, # length, in seconds, of a subperiod
 
         # below, each array indicate subperiod values for t, mc, and rp (and whatever else)
         # if there are too few elements in a period's array, the array is repeated until numSubperiods. 
@@ -205,8 +216,9 @@ SESSION_CONFIGS = [
   'name': 'HotMarkUps_2Player_Cost_Treatment',
   'app_sequence': [
     'hotellingmarketup_00',
-    'hotellingmarkup_2p',
+    'hotellingmarkup',
   ],
+  'players_per_group': 2,
   'num_demo_participants': 2, # number of participants per group set in  models
 
   'loc':None, # set with array [ ], if None, then spaced (1/N)/2 apart
@@ -284,8 +296,9 @@ SESSION_CONFIGS = [
   'name': 'HotMarkUps_2Player_Shopping_Cost',
   'app_sequence': [
     'hotellingmarketup_00',
-    'hotellingmarkup_2p',
+    'hotellingmarkup',
   ],
+  'players_per_group': 2,
   'num_demo_participants': 2, # number of participants per group set in  models
 
   'loc':None, # set with array [ ], if None, then spaced (1/N)/2 apart
@@ -363,8 +376,9 @@ SESSION_CONFIGS = [
   'name': 'HotMarkUps_2Player_Demand_Treatment',
   'app_sequence': [
     'hotellingmarketup_00',
-    'hotellingmarkup_2p',
+    'hotellingmarkup',
   ],
+  'players_per_group': 2,
   'num_demo_participants': 2, # number of participants per group set in  models
 
   'loc':None, # set with array [ ], if None, then spaced (1/N)/2 apart
@@ -444,6 +458,7 @@ SESSION_CONFIGS = [
     'hotellingmarketup_00',
     'hotellingmarkup',
   ],
+  'players_per_group': 4,
   'num_demo_participants': 4, # number of participants per group set in  models
 
   'loc':None, # set with array [ ], if None, then spaced (1/N)/2 apart
@@ -523,6 +538,7 @@ SESSION_CONFIGS = [
     'hotellingmarketup_00',
     'hotellingmarkup',
   ],
+  'players_per_group': 4,
   'num_demo_participants': 4, # number of participants per group set in  models
 
   'loc':None, # set with array [ ], if None, then spaced (1/N)/2 apart
@@ -602,6 +618,7 @@ SESSION_CONFIGS = [
     'hotellingmarketup_00',
     'hotellingmarkup',
   ],
+  'players_per_group': 4,
   'num_demo_participants': 4, # number of participants per group set in  models
 
   'loc':None, # set with array [ ], if None, then spaced (1/N)/2 apart
@@ -672,88 +689,7 @@ SESSION_CONFIGS = [
      [ 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90 , 0.80, 0.80, 0.80, 0.80, 0.80, 0.80, 0.80, 0.80, 0.80, 0.80 ],
    ],  # consumer reserve price,  each element is one subperiod in a period.  
 
-}, {
-
-  'display_name': 'Hotelling Mark-Up: 2-Player, Cost Treatment, Realtime',
-
-  'name': 'HotMarkUps_2Player_Cost_Treatment_Realtime',
-  'app_sequence': [
-    'hotellingmarketup_00',
-    'hotellingmarkup_realtime',
-  ],
-  'players_per_group': 2,
-  'num_demo_participants': 2, # number of participants per group set in  models
-
-  'loc':None, # set with array [ ], if None, then spaced (1/N)/2 apart
-  
-  #Number of Periods defined by number of arrays in t, mc and rp below. 
-  
-  'numSubperiods' :20, # number of subperiods in a period. 
-  # if large, ensure 'num_rounds' in the app hotellingmarkup models.py is sufficently large
-  'subperiod_time': 10, # length, in seconds, of a subperiod
-  
-  # below, each array indicate subperiod values for t, mc, and rp (and whatever else)
-  # if there are too few elements in a period's array, the array is repeated until numSubperiods. 
-  
-
-  't':[      #shopping cost, each element is one subperiod in a period. 
-     [ 0.40, 0.13, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40 , 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10 ],
-     [ 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40 , 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40 ],
-     [ 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10 , 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40 ],
-     [ 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40 , 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40 ],
-     [ 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10 , 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10 ],
-     [ 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10 , 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40 ],
-     [ 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40 , 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10 ],
-     [ 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10 , 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10 ],
-     [ 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40 , 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40 ],
-     [ 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10 , 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10 ],
-     [ 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10 , 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10 ],
-     [ 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40 , 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40 ],
-     [ 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40 , 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10 ],
-     [ 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40 , 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10 ],
-     [ 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10, 0.10 , 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40, 0.40 ],
-   ],  #shopping cost, each element is one subperiod in a period. 
-
-
-  'mc':[     #firm mill cost, or per item cost, each element is one subperiod in a period. 
-     [ 0.05, 0.20, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05 , 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25 ],
-     [ 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15 , 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25 ],
-     [ 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25 , 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05 ],
-     [ 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15 , 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05 ],
-     [ 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15 , 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25 ],
-     [ 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25 , 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05 ],
-     [ 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05 , 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25 ],
-     [ 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15 , 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05 ],
-     [ 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15 , 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25 ],
-     [ 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15 , 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25 ],
-     [ 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15 , 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05 ],
-     [ 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15 , 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05 ],
-     [ 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05 , 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25 ],
-     [ 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05 , 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25 ],
-     [ 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25 , 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05 ],
-   ],  #firm mill cost, or per item cost, each element is one subperiod in a period.  
-
-            
-  'rp':[     # consumer reserve price,  each element is one subperiod in a period. 
-     [ 0.90, 0.5, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90 , 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90 ],
-     [ 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90 , 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90 ],
-     [ 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00 , 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00 ],
-     [ 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00 , 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00 ],
-     [ 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90 , 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90 ],
-     [ 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90 , 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90 ],
-     [ 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00 , 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00 ],
-     [ 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90 , 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90 ],
-     [ 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00 , 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00 ],
-     [ 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00 , 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00 ],
-     [ 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00 , 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00 ],
-     [ 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90 , 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90 ],
-     [ 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00 , 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00 ],
-     [ 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90 , 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90 ],
-     [ 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00 , 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00 ],
-   ],  # consumer reserve price,  each element is one subperiod in a period.  
-
 }, 
-
 ]
 
 # anything you put after the below line will override
