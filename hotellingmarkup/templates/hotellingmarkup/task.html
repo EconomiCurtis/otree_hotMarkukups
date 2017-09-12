@@ -1133,10 +1133,13 @@ function draw(my_p_) {
     }
     players = payoff_function(players_sml);
 
+
+    {% if debug %}
     document.getElementById('id_question7').innerHTML = JSON.stringify(players_sml);
     // draw stuff below in "Draw Area"
     document.getElementById('id_question6').innerHTML = JSON.stringify(players);
-
+    {% endif %}
+    
     // log market boundries 
     // calc market share
     // calc profit
