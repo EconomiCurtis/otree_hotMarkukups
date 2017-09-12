@@ -891,6 +891,8 @@ function payoff_function(players_sml){
 
     }
 
+    {% if debug %}
+
     document.getElementById('id_intersections_rp').innerHTML = JSON.stringify(intersections_rp);
 
     document.getElementById('id_question').innerHTML = JSON.stringify(intersections);
@@ -901,6 +903,7 @@ function payoff_function(players_sml){
     document.getElementById('id_rp_dists').innerHTML = JSON.stringify(rp_dists);
     document.getElementById('id_intersection_dists').innerHTML = JSON.stringify(intersection_dists);
 
+    {% endif %}
 
     return players_full;
 }
