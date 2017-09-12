@@ -79,7 +79,7 @@
 
 <!------------------------------------------------------------------------------>
 
-{% if debug %}
+<!-- {% if debug %} -->
 In Debug Mode Only:
 
 <p> || Shopping Cost, t: {{player.transport_cost|json}} || Mill Cost, mc: {{player.mc|json}} || Reserve Price, rp: {{player.rp|json}}</p>
@@ -175,7 +175,7 @@ Intersections relative to index player location:
 Boundaries:
 <p><span name="question" id="id_question4">...</span></p>
 
-<hr>
+<!-- <hr>
 excludedplayers_full:
 <p><span name="question" id="id_question5">...</span></p>
 
@@ -183,12 +183,12 @@ excludedplayers_full:
 <p><span name="question" id="id_question6">...</span></p>
 
 <hr>
-<p><span name="question" id="id_question7">...</span></p>
+<p><span name="question" id="id_question7">...</span></p> -->
+
+ 
+<!-- {% endif %} -->
 
 {{ form.boundary_hi.errors }}
-
-{% endif %}
-
 
 
 
@@ -892,17 +892,14 @@ function payoff_function(players_sml){
     }
 
     {% if debug %}
-
     document.getElementById('id_intersections_rp').innerHTML = JSON.stringify(intersections_rp);
-
     document.getElementById('id_question').innerHTML = JSON.stringify(intersections);
     document.getElementById('id_question2').innerHTML = JSON.stringify(intersectionstest);
     document.getElementById('id_question3').innerHTML = JSON.stringify(intersections2);
     document.getElementById('id_question4').innerHTML = JSON.stringify(boundaries);
-    document.getElementById('id_question5').innerHTML = JSON.stringify(excludedplayers_full);
+    // document.getElementById('id_question5').innerHTML = JSON.stringify(excludedplayers_full);
     document.getElementById('id_rp_dists').innerHTML = JSON.stringify(rp_dists);
     document.getElementById('id_intersection_dists').innerHTML = JSON.stringify(intersection_dists);
-
     {% endif %}
 
     return players_full;
@@ -1136,7 +1133,7 @@ function draw(my_p_) {
 
     {% if debug %}
     document.getElementById('id_question7').innerHTML = JSON.stringify(players_sml);
-    // draw stuff below in "Draw Area"
+    // // draw stuff below in "Draw Area"
     document.getElementById('id_question6').innerHTML = JSON.stringify(players);
 
     // log market boundries 
@@ -1163,10 +1160,10 @@ function draw(my_p_) {
         // log profit
         id_string = "id_profit_" + players[i].id;
         document.getElementById(id_string).innerHTML = players[i].profit.toFixed(4);
-    {% endif %}
+
 
     }
-
+    {% endif %}
 
     // DRAW Area!
     var ctx = canvas.getContext('2d');
@@ -1269,10 +1266,6 @@ var mybtn = document.querySelectorAll('.btn');
 var i = 0;
      if( i < mybtn.length) {
 
-
-
-
-
         $('<input>').attr({
             type: 'hidden',
             name: 'auto_submit',
@@ -1331,7 +1324,7 @@ function countdown( elementName, minutes, seconds )
 }
 
 countdown( "countdown", 0, {{subperiod_timer}});
-countdown( "countdown2", 100, 0 );
+// countdown( "countdown2", 100, 0 );
 
 
 
