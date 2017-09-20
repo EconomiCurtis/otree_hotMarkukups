@@ -43,12 +43,18 @@ class Subsession(BaseSubsession):
 		players_per_group = self.session.config['players_per_group']
 		numSubperiods = self.session.config['numSubperiods']
 
+		# Each period has:
+		# - one round zero to initiate prices
+		# - numSubperiods rounds
+		# - one extra round for summary
+		# so if there are 20 subperiods, you should see 22-rounds for each period
+		# all this is reflect in the "elif" below
 		for p in self.get_players():
 			# set Period and SubPeriod Numbers
 			if self.round_number == 1:
 				p.period_number = 1
 				p.subperiod_number = 0
-			elif (((self.round_number - 1) / (numSubperiods + 1)) % 1 != 0):
+			elif (((self.round_number - 1) / (numSubperiods + 2)) % 1 != 0):
 				#if still within period defined by numSubperiods;
 				p.period_number = p.in_round(self.round_number - 1).period_number
 				p.subperiod_number = p.in_round(self.round_number - 1).subperiod_number + 1
@@ -59,7 +65,10 @@ class Subsession(BaseSubsession):
 
 
 		#### GROUPING #########################
-		# Set Groups based on Period Numbers. 
+		# grouping handled in two places, 
+		# below, and in the in self.get_players() control structure
+		# - Set Groups based on Period Numbers. 
+		# - but randomize between periods
 		self.group_randomly()
 		group_matrix = []
 		for i in range(0, len(players), players_per_group):
@@ -76,11 +85,11 @@ class Subsession(BaseSubsession):
 			# Set shopping costs / transport costs
 			periodIndex = (p.period_number - 1)
 			if p.period_number <= len(self.session.config['t']):  #if period exits
-				
 				if p.subperiod_number == 0: # if initial subperiod, just set to subpeeriod 1
 					subperiodIndex = (p.subperiod_number % len(self.session.config['t'][periodIndex]))
 					p.transport_cost = self.session.config['t'][periodIndex][0]
-
+				elif p.subperiod_number == (numSubperiods + 1):
+					p.transport_cost = None
 				else:
 					subperiodIndex = (p.subperiod_number % len(self.session.config['t'][periodIndex]))
 					p.transport_cost = self.session.config['t'][periodIndex][subperiodIndex - 1]
@@ -88,21 +97,22 @@ class Subsession(BaseSubsession):
 
 			# set mill costs, marginal cost to firm. 
 			if p.period_number <= len(self.session.config['mc']):
-
 				if p.subperiod_number == 0: # if initial subperiod. 
 					subperiodIndex = (p.subperiod_number % len(self.session.config['mc'][periodIndex]))
 					p.mc = self.session.config['mc'][periodIndex][0]
-
+				elif p.subperiod_number == (numSubperiods + 1):
+					p.mc = None
 				else: 
 					subperiodIndex = (p.subperiod_number % len(self.session.config['mc'][periodIndex]))
 					p.mc = self.session.config['mc'][periodIndex][subperiodIndex - 1]
 
 			# set reservation prices, max price consumer willing to pay
 			if p.period_number <= len(self.session.config['rp']): #if period exists
-
 				if p.subperiod_number == 0: # if initial subperiod. 
 					subperiodIndex = (p.subperiod_number % len(self.session.config['rp'][periodIndex]))
 					p.rp = self.session.config['rp'][periodIndex][0]
+				elif p.subperiod_number == (numSubperiods + 1):
+					p.rp = None
 				else:
 					subperiodIndex = (p.subperiod_number % len(self.session.config['rp'][periodIndex]))
 					p.rp = self.session.config['rp'][periodIndex][subperiodIndex - 1]
@@ -110,18 +120,22 @@ class Subsession(BaseSubsession):
 
 			p.subperiod_time = self.session.config['subperiod_time']
 
-			# Grouping
+			# Grouping part 2
+			# also get price
 			if p.period_number <= len(self.session.config['t']):
-				if self.round_number == 1:
+				if self.round_number == 1: #first round
 					self.group_randomly()
 					p.price = random.uniform(0, 1)
-				elif (((self.round_number - 1) /  (numSubperiods + 1)) % 1 == 0):
+				elif (((self.round_number - 1) /  (numSubperiods + 2)) % 1 == 0):
 					self.group_randomly()
 					p.price = random.uniform(0, 1)
 				else:
 					self.group_like_round(self.round_number - 1)
 
-		# set locations (must occur after groups are set)
+
+		# set locations 
+		# - since loc depend on group, and id within group, 
+		#   this must occur after groups are set
 		for p in self.get_players():
 
 			if p.period_number <= len(self.session.config['t']):
@@ -133,206 +147,7 @@ class Subsession(BaseSubsession):
 
 
 class Group(BaseGroup):
-
-	def set_payoffs(self):
-		"""calculate payoffs in round"""
-
-		for p in self.get_players():
-
-			# if no price (ie price-slider unoved), get prev subperiod price
-			if p.price == None:
-				p.price = p.in_round(self.round_number-1).price
-
-			# variable setup
-			if p.id_in_group == 1:
-				p1_l = p.loc
-				p1_p = p.price
-			elif p.id_in_group == 2:
-				p2_l = p.loc
-				p2_p = p.price
-			elif p.id_in_group == 3:
-				p3_l = p.loc
-				p3_p = p.price
-			elif p.id_in_group == 4:
-				p4_l = p.loc
-				p4_p = p.price
-
-			t = p.transport_cost
-
-
-
-		# //p1 - priced out of market
-		intersection_1_2 = (t * p2_l+p2_p + t * p1_l - p1_p) / (2*t)
-		intersection_1_3 = (t * p3_l+p3_p + t * p1_l - p1_p) / (2*t)
-		intersection_1_4 = (t * p4_l+p4_p + t * p1_l - p1_p) / (2*t)
-
-		if ((intersection_1_2 < p1_l) | (intersection_1_3 < p1_l) | (intersection_1_4 < p1_l)):
-			p1_boundary_lo = 0 
-			p1_boundary_hi = 0 
-
-		# //p4 - priced out of market
-		intersection_1_4 = (t *p4_l+p4_p + t * p1_l - p1_p) / (2*t)
-		intersection_2_4 = (t *p4_l+p4_p + t * p2_l - p2_p) / (2*t)
-		intersection_3_4 = (t *p4_l+p4_p + t * p3_l - p3_p) / (2*t)
-
-		if ((intersection_3_4 > p4_l) | (intersection_2_4 > p4_l) | (intersection_1_4 > p4_l)):
-			p4_boundary_lo = 0 
-			p4_boundary_hi = 0 
-
-		# //p2 - priced out of market
-		intersection_1_2 = (t *p2_l+p2_p + t * p1_l - p1_p) / (2*t)
-		intersection_2_3 = (t *p3_l+p3_p + t * p2_l - p2_p) / (2*t)
-		intersection_2_4 = (t *p4_l+p4_p + t * p2_l - p2_p) / (2*t)
-
-		if ((intersection_1_2 > p2_l) | (intersection_2_3 < p2_l) | (intersection_2_4 < p2_l)):
-			p2_boundary_lo = 0 
-			p2_boundary_hi = 0
-
-		# //p3 - priced out of market
-		intersection_1_3 = (t *p3_l+p3_p + t * p1_l - p1_p) / (2*t)
-		intersection_2_3 = (t *p3_l+p3_p + t * p2_l - p2_p) / (2*t)
-		intersection_3_4 = (t *p4_l+p4_p + t * p3_l - p3_p) / (2*t)
-
-		if ((intersection_1_3 > p3_l) | (intersection_2_3 > p3_l) | (intersection_3_4 < p3_l)):
-			p3_boundary_lo = 0 
-			p3_boundary_hi = 0 
-
-
-
-		# //p1
-		if ((intersection_1_2 < p1_l) | (intersection_1_3 < p1_l) | (intersection_1_4 < p1_l)):
-			p1_boundary_lo = 0 
-			p1_boundary_hi = 0 
-		elif (intersection_1_2 > p2_l):
-			if (intersection_1_3 > p3_l):
-				if (intersection_1_4 > p4_l): #//prices below all else
-					p1_boundary_lo = 0 
-					p1_boundary_hi = 1 
-				else:
-					p1_boundary_lo = 0 
-					p1_boundary_hi = intersection_1_4
-			elif (intersection_1_4 < intersection_1_3): # // if p4 priced out p3!
-				p1_boundary_lo = 0 
-				p1_boundary_hi = intersection_1_4 
-			else:
-				p1_boundary_lo = 0 
-				p1_boundary_hi = intersection_1_3 
-		elif ((intersection_1_4 < intersection_1_3) & (intersection_1_4 < intersection_1_2)):
-				p1_boundary_lo = 0 
-				p1_boundary_hi = intersection_1_4 
-		elif (intersection_1_3 < intersection_1_2):
-				p1_boundary_lo = 0 
-				p1_boundary_hi = intersection_1_3 
-		else:
-			p1_boundary_lo = 0 
-			p1_boundary_hi = intersection_1_2
-
-
-		# //p4
-		if ((intersection_3_4 > p4_l) | (intersection_2_4 > p4_l) | (intersection_1_4 > p4_l)):
-			p4_boundary_lo = 0 
-			p4_boundary_hi = 0 
-		elif (intersection_3_4 < p3_l):
-			if (intersection_2_4 < p2_l):
-				if (intersection_1_4 < p1_l): #//prices below all else
-					p4_boundary_lo = 0 
-					p4_boundary_hi = 1 
-				else:
-					p4_boundary_lo = intersection_1_4 
-					p4_boundary_hi = 1 
-			elif (intersection_1_4 > intersection_2_4): #// if p4 priced out p3!
-					p4_boundary_lo = intersection_1_4 
-					p4_boundary_hi = 1 
-			else:
-				p4_boundary_lo = intersection_2_4 
-				p4_boundary_hi = 1
-		elif ((intersection_1_4 > intersection_2_4) & (intersection_1_4 > intersection_3_4)):
-				p4_boundary_lo = intersection_1_4 
-				p4_boundary_hi = 1 
-		elif (intersection_2_4 > intersection_3_4):
-				p4_boundary_lo = intersection_2_4 
-				p4_boundary_hi = 1 
-		else:
-			p4_boundary_lo = intersection_3_4 
-			p4_boundary_hi = 1 
-
-
-		# //p2
-		intersection_1_2 = (t *p2_l+p2_p + t * p1_l - p1_p) / (2*t)
-		intersection_2_3 = (t *p3_l+p3_p + t * p2_l - p2_p) / (2*t)
-		intersection_2_4 = (t *p4_l+p4_p + t * p2_l - p2_p) / (2*t)
-
-		if ((intersection_1_2 > p2_l) | (intersection_2_3 < p2_l) | (intersection_2_4 < p2_l)):
-			p2_boundary_lo = 0 
-			p2_boundary_hi = 0 
-		else:
-			# //p2 left side
-			if (intersection_1_2 >= p1_l):
-				p2_boundary_lo = intersection_1_2
-			elif (intersection_1_2 < p1_l):
-				p2_boundary_lo = 0
-
-			# p2 right side
-			if (intersection_2_3 > p3_l):
-				if (intersection_2_4 > p4_l):
-					p2_boundary_hi = 1
-				else:
-					p2_boundary_hi = intersection_2_4
-			elif (intersection_2_4 < intersection_2_3):
-				p2_boundary_hi = intersection_2_4
-			else:
-				p2_boundary_hi = intersection_2_3
-
-
-		# //p3
-		intersection_1_3 = (t *p3_l+p3_p + t * p1_l - p1_p) / (2*t)
-		intersection_2_3 = (t *p3_l+p3_p + t * p2_l - p2_p) / (2*t)
-		intersection_3_4 = (t *p4_l+p4_p + t * p3_l - p3_p) / (2*t)
-
-		if ((intersection_1_3 > p3_l) | (intersection_2_3 > p3_l) | (intersection_3_4 < p3_l)):
-			p3_boundary_lo = 0 
-			p3_boundary_hi = 0 
-		else:
-			# //p3 left side
-			if (intersection_2_3 < p2_l):
-				if (intersection_1_3 < p1_l):
-					p3_boundary_lo = 0
-				else:
-					p3_boundary_lo = intersection_1_3
-			elif (intersection_1_3 > intersection_2_3):
-				p3_boundary_lo = intersection_1_3
-			else:
-				p3_boundary_lo = intersection_2_3
-
-			# // p3 right side
-			if (intersection_3_4 <= p4_l):
-				p3_boundary_hi = intersection_3_4
-			elif (intersection_3_4 > p4_l):
-				p3_boundary_hi = 1
-
-
-		for p in self.get_players():
-
-			# variable setup
-			if p.id_in_group == 1:
-				p.boundary_lo = p1_boundary_lo
-				p.boundary_hi = p1_boundary_hi
-			elif p.id_in_group == 2:
-				p.boundary_lo = p2_boundary_lo
-				p.boundary_hi = p2_boundary_hi
-			elif p.id_in_group == 3:
-				p.boundary_lo = p3_boundary_lo
-				p.boundary_hi = p3_boundary_hi
-			elif p.id_in_group == 4:
-				p.boundary_lo = p4_boundary_lo
-				p.boundary_hi = p4_boundary_hi
-				
-			p.market_share = p.boundary_hi - p.boundary_lo
-			p.round_payoff = p.market_share * p.price
-			p.period_num = p.round_number
-			p.cumulative_round_payoff = sum([ply.round_payoff / Constants.num_rounds for ply in p.in_all_rounds() if (ply.round_payoff != None)])
-
-
+	pass
 
 
 class Player(BasePlayer):
@@ -371,21 +186,22 @@ class Player(BasePlayer):
 	price = models.FloatField(
 		doc="player's price in previous round/subperiod")
 
-
+	next_subperiod_price = models.FloatField(
+		doc="player's price in current round/subperiod")
+	
 	boundary_lo = models.FloatField(
 		doc="player's low end of boundary")
 
 	boundary_hi = models.FloatField(
 		doc="player's high end of boundary")
 
-	round_payoff = models.FloatField(
-		doc="player's payoffs this round/subperiod")
+	prev_round_payoff = models.FloatField(
+		doc="player's payoffs this previous round/subperiod")
 
-	cumulative_round_payoff = models.FloatField(
-		doc="player's payoffs sumulative this round/subperiod. Final round's cumulative_round_payoff is score for this period")
+	prev_round_cumulative_payoff = models.FloatField(
+		doc="player's payoffs cumulative the previous round/subperiod.")
 
-	next_subperiod_price = models.FloatField(
-		doc="player's price in current round/subperiod")
+
 
 	paid_period = models.IntegerField(
 		doc='''1 if this is a paid period, 0 otherwise''')

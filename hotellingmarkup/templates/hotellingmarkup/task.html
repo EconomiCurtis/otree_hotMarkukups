@@ -24,7 +24,7 @@
 <table class="tg">
   <tr>
     <th class="tg-top" colspan="5" width="500px"><h2>Round timer: <font color="red"><div style="display: inline" id="countdown"></div></font></th>
-    <th class="tg-lqy6" colspan="5" width="500px"><h2 >Period score: 
+    <th class="tg-lqy6" colspan="5" width="500px"><h2 >Cumulative Period Score: 
         <span name="current points" id="id_cumulativePoints">...</span></th>
   </tr>
 </table>
@@ -82,7 +82,7 @@
 <!-- {% if debug %} -->
 In Debug Mode Only:
 
-<p> || Shopping Cost, t: {{player.transport_cost|json}} || Mill Cost, mc: {{player.mc|json}} || Reserve Price, rp: {{player.rp|json}}</p>
+<p> || Shopping Cost, t: {{transport_cost|json}} || Mill Cost, mc: {{mc|json}} || Reserve Price, rp: {{rp|json}}</p>
 
 <p><span name="question" id="id_question6">...</span></p>
 <p><span name="question" id="id_question7">...</span></p>
@@ -192,11 +192,11 @@ excludedplayers_full:
 
 
 
-<input  class='btn round_payoff-button' 
+<input  class='btn prev_round_payoff-button' 
         class='form-control' 
         type="number" 
-        name='round_payoff' 
-        id="id_round_payoff" 
+        name='prev_round_payoff' 
+        id="id_prev_round_payoff" 
         style=" visibility:hidden;">
 
 <input  class='btn boundary_lo-button' 
@@ -252,12 +252,32 @@ function log_data(val){
 
     players = payoff_function(players);
 
+
+    // PAYOFF LOGGING LOGIC
     $('<input>').attr({
         type: 'hidden',
-        name: 'round_payoff',
+        name: 'prev_round_payoff',
         value: players[{{id_in_group}}-1].profit
     }).appendTo('form');
 
+    // Period Score - appears on page
+
+    // prev round's cumulative score
+    var prev_round_cumulative_payoff = {{prev_round_cumulative_payoff|json}};
+
+    // last period's score
+    var nu_points = players[{{id_in_group}}-1].profit * 100;
+
+    if ({{ player.round_number }} == 1){
+        document.getElementById('id_cumulativePoints').innerHTML = (0).toFixed(1);        
+    } else {
+        document.getElementById('id_cumulativePoints').innerHTML = (prev_round_cumulative_payoff + nu_points).toFixed(1);   
+    };
+
+
+    /////////////////////////////////////////
+
+    // LOG LOC, PRICE, AND MARKET INFO
     if (players[{{id_in_group}}-1].boundary_lo == null){
     $('<input>').attr({
         type: 'hidden',
@@ -282,7 +302,7 @@ function log_data(val){
         }).appendTo('form');
     }
 
-    document.getElementById('id_cumulativePoints').innerHTML = (Number({{cumulative_round_payoff}}) + players[{{id_in_group}}-1].profit).toFixed(1);
+
 
 };
 
@@ -584,9 +604,9 @@ function drawFullBox(price, loc_lo, loc_hi, ht, wdt, mrg, mc ){
 function payoff_function(players_sml){
 
     var n = players_sml.length;
-    var t = Number({{ player.transport_cost|json }});
-    var mc = Number({{ player.mc|json }});
-    var rp = Number({{ player.rp|json }});
+    var t = Number({{ transport_cost|json }});
+    var mc = Number({{ mc|json }});
+    var rp = Number({{ rp|json }});
 
     var players_full = [];
 
@@ -886,8 +906,17 @@ function payoff_function(players_sml){
         }
 
 
+        ////////////////////
         // log profit
-        players_full[i].profit = players_full[i].market_share * (Number(players_full[i].price) - mc)
+        // If initial subperiod don't log profits
+        var subpeirod_number = {{round|json}}; //
+        if (subpeirod_number == 0 | subpeirod_number == 1){
+            players_full[i].profit = 0;
+        } else {
+            players_full[i].profit = players_full[i].market_share * (Number(players_full[i].price) - mc);
+        };
+        ///////////////////
+
 
     }
 
@@ -944,9 +973,9 @@ function draw(my_p_) {
     players[{{id_in_group}}-1].price = my_p; //update my price as
 
     // payoff function calc
-    var t = Number({{ player.transport_cost|json }});
-    var mc = Number({{ player.mc|json }});
-    var rp = Number({{ player.rp|json }});
+    var t = Number({{ transport_cost|json }});
+    var mc = Number({{ mc|json }});
+    var rp = Number({{ rp|json }});
 
     // // Intersections - between 0 and 1
     // var intersections = [];

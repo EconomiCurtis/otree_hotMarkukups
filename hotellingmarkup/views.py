@@ -44,7 +44,7 @@ class WaitPage1(WaitPage):
         pass 
     
     def is_displayed(self):
-        return self.player.subperiod_number == 1
+        return self.player.subperiod_number == 0
 
 
 
@@ -55,12 +55,14 @@ class task(Page):
 
     form_model = models.Player
     form_fields = [
-        'next_subperiod_price','round_payoff','boundary_lo','boundary_hi'
+        'next_subperiod_price','prev_round_payoff','boundary_lo','boundary_hi'
         ]
   
   
     def is_displayed(self):
-        return ((self.round_number == 0) | ((self.round_number / (self.session.config['numSubperiods'] +1)) % 1 != 0.0))
+        return (
+            self.player.subperiod_number <= (self.session.config['numSubperiods'])
+        ) # summary info round
 
 
     def after_all_players_arrive(self):
@@ -72,100 +74,69 @@ class task(Page):
         
 
         players = []
-        if (self.round_number == 1): #initial price randomized in models subsession
-            my_prev_price = self.player.price 
-            for op in self.group.get_players():
-                players.append(
-                    {
-                        'id':op.id_in_group,
-                        'loc':op.loc, 
-                        'price':op.price, 
-                        'cum_payoff':sum([p.round_payoff for p in op.in_all_rounds() if ((p.round_payoff != None) & (p.period_number == self.player.period_number))])
-                    }
-                )
-            cumulative_round_payoff = 0
-        elif (self.player.period_number != self.player.in_round(self.round_number-1).period_number):
-            #needs an elif here, since self.player.in_round(self.round_number-1).period_number is NULL when self.round_number == 1
-            my_prev_price = self.player.price #else pull price from previous round. 
+        if (self.player.subperiod_number == 0): #initial price randomized in models subsession
+            my_prev_price = self.player.price
+            transport_cost = self.player.transport_cost
+            mc = self.player.mc
+            rp = self.player.rp
 
             for op in self.group.get_players():
                 players.append(
                     {
+                        'subperiod_num': self.player.subperiod_number,
+                        'period_num':self.player.period_number,
                         'id':op.id_in_group,
                         'loc':op.loc, 
                         'price':op.price, 
-                        'cum_payoff':sum([p.round_payoff for p in op.in_all_rounds() if ((p.round_payoff != None) & (p.period_number == self.player.period_number))])
+                        'cum_payoff':sum([p.prev_prev_round_payoff for p in op.in_all_rounds() if ((p.prev_round_payoff != None) & (p.period_number == self.player.period_number))])
                     }
                 )
-            cumulative_round_payoff = 0
+            prev_round_cumulative_payoff = 0.0
         else: 
-            my_prev_price = self.player.in_round(self.round_number).price #else pull price from previous round. 
+
+            my_prev_price = self.player.in_round(self.round_number-1).next_subperiod_price #else pull price from previous round. 
+            transport_cost = self.player.in_round(self.round_number-1).transport_cost
+            mc = self.player.in_round(self.round_number-1).mc,
+            rp = self.player.in_round(self.round_number-1).rp,
 
             for op in self.group.get_players():
+
                 op.price = op.in_round(self.round_number-1).next_subperiod_price
+
                 players.append(
                     {
+                        'subperiod_num': self.player.subperiod_number,
+                        'period_num':self.player.period_number,
                         'id':op.id_in_group,
                         'loc':op.in_round(self.round_number-1).loc, 
                         'price':op.in_round(self.round_number-1).next_subperiod_price, 
-                        'cum_payoff':sum([p.round_payoff for p in op.in_all_rounds() if ((p.round_payoff != None) & (p.period_number == self.player.period_number))])
+                        'cum_payoff':sum([p.prev_round_payoff for p in op.in_all_rounds() if ((p.prev_round_payoff != None) & (p.period_number == self.player.period_number))])
                     }
                 )
-            cumulative_round_payoff = sum([p.round_payoff for p in self.player.in_previous_rounds() if ((p.round_payoff != None) & (p.period_number == self.player.period_number))])
+
+            prev_round_cumulative_payoff = sum([p.prev_round_payoff for p in self.player.in_previous_rounds() if ((p.prev_round_payoff != None) & (p.period_number == self.player.period_number))])
 
 
-
-
-        # create table of other player's loc and prices
-        # use this table on the page to draw the full market place. 
-        prev_market_table = []
-        if self.round_number == 1: #initial price randomized in models subsession
-            for plyr in self.group.get_players():
-                player_data = {
-                    'player_num':plyr.in_round(self.round_number).id_in_group,
-                    'loc':plyr.loc,
-                    'price':plyr.price,
-                    'cumulative_round_payoff':0,
-                }
-                prev_market_table.append(player_data)
-                        # this player's data.             
-            other_prev_price = self.player.get_others_in_group()[0].in_round(self.round_number).price
-         
-        else:
-            for plyr in self.group.get_players():
-                player_data = {
-                    'player_num':plyr.id_in_group,
-                    'loc':plyr.in_round(self.round_number-1).loc,
-                    'price':plyr.in_round(self.round_number-1).price,
-                    'cumulative_round_payoff':sum([p.round_payoff for p in plyr.in_all_rounds() if (p.round_payoff != None)]),
-                }
-                prev_market_table.append(player_data)
-
-            # this player's data.             
-            my_prev_price = self.player.price #else pull price from previous round. 
-            
 
         return {
             'players':players,
             'id_in_group':self.player.id_in_group,
             'subperiod_timer':subperiod_timer,
-            'transport_cost':self.player.transport_cost,
+            'transport_cost':transport_cost,
+            'mc':mc,
+            'rp':rp,
             'round':self.player.subperiod_number,
             'num_rounds':Constants.num_rounds,
             'my_loc':self.player.loc,
             'my_prev_price':my_prev_price,
-            'my_prev_price_100':my_prev_price*100,
-            'cumulative_round_payoff':round(cumulative_round_payoff * 100, 3),
-            'prev_market_table':prev_market_table,
+            'my_prev_price_100': my_prev_price * 100,
+            'prev_round_cumulative_payoff':round(prev_round_cumulative_payoff * 100, 3),
             'debug':settings.DEBUG,
             'period_num':self.player.period_number,
         }
 
     def before_next_page(self):
-        self.player.cumulative_round_payoff = sum([p.round_payoff for p in self.player.in_previous_rounds() if ((p.round_payoff != None) & (p.period_number == self.player.period_number))])
-
-        if self.player.subperiod_number == 0:
-            self.player.round_payoff = 0
+            self.player.prev_round_cumulative_payoff = sum([p.prev_round_payoff for p in self.player.in_previous_rounds() if ((p.prev_round_payoff != None) & (p.period_number == self.player.period_number))])
 
 
 class WaitPage(WaitPage):
@@ -176,33 +147,6 @@ class WaitPage(WaitPage):
         pass 
 
 
-class ResultsWaitPage(WaitPage):
-
-    def is_displayed(self):
-
-        # if we don't have a log yet, (that is, we're in period one), then start a new log. 
-        # save info from this round needed to calc final payoffs.       
-        if self.round_number == (Constants.num_rounds):
-            if 'exp_log' in self.participant.vars: #just error handling
-              exp_log  = self.participant.vars['exp_log']
-            else:
-              exp_log = []
-
-            cumulative_round_payoff = sum([(p.round_payoff / Constants.num_rounds) for p in self.player.in_all_rounds() if (p.round_payoff != None)])
-            rounds = sum([1 for p in self.player.in_all_rounds() if (p.round_payoff != None)])
-            
-            row = {
-                'period_num':(len(exp_log) + 1),
-                'period_score':round(cumulative_round_payoff * 100,6),
-                'paid_period':True,
-                'rounds':rounds,
-            }
-
-            if (len(exp_log) + 1) == self.player.period_number:
-                exp_log.append(row)
-                self.participant.vars['exp_log'] = exp_log
-
-        return self.round_number == (Constants.num_rounds)
 
 
 
@@ -211,59 +155,112 @@ class period_summary_review(Page):
 
     form_model = models.Player
     form_fields = [
-        'round_payoff','boundary_lo','boundary_hi'
+        'prev_round_payoff','boundary_lo','boundary_hi'
         ]
 
     def is_displayed(self):
-        return ((self.round_number / (self.session.config['numSubperiods'] +1)) % 1 == 0.0)
+        return(self.player.subperiod_number == (self.session.config['numSubperiods'] + 1))
 
     def vars_for_template(self):
 
 
+
+
+        # needed to set scores for final subpeirod
+        my_prev_price = self.player.in_round(self.round_number-1).next_subperiod_price #else pull price from previous round. 
+        transport_cost = self.player.in_round(self.round_number-1).transport_cost
+        mc = self.player.in_round(self.round_number-1).mc,
+        rp = self.player.in_round(self.round_number-1).rp,
         players = []
-        period_scores = []
         for op in self.group.get_players():
+
             op.price = op.in_round(self.round_number-1).next_subperiod_price
+
             players.append(
                 {
+                    'subperiod_num': self.player.subperiod_number,
+                    'period_num':self.player.period_number,
                     'id':op.id_in_group,
                     'loc':op.in_round(self.round_number-1).loc, 
                     'price':op.in_round(self.round_number-1).next_subperiod_price, 
-                    'cum_payoff':sum([p.round_payoff for p in op.in_all_rounds() if ((p.round_payoff != None) & (p.period_number == self.player.period_number))])
+                    'cum_payoff':sum([p.prev_round_payoff for p in op.in_all_rounds() if ((p.prev_round_payoff != None) & (p.period_number == self.player.period_number))])
                 }
             )
 
-        for i in range((self.player.period_number)):
+        prev_round_cumulative_payoff = sum([p.prev_round_payoff for p in self.player.in_previous_rounds() if ((p.prev_round_payoff != None) & (p.period_number == self.player.period_number))])
+
+
+        # get period scores
+        period_scores = []
+        for period in range(1,self.player.period_number+1):
             period_scores.append(
-                    {
-                        'period':i+1,
-                        'score':sum([p.round_payoff * 100 for p in self.player.in_previous_rounds() if ((p.round_payoff != None) & (p.period_number == (i+1)))])
-                    }
-                )
+                {
+                    'period':period,
+                    'score':sum([p.prev_round_payoff for p in self.player.in_previous_rounds() if ((p.prev_round_payoff != None) & (p.period_number == period))]) * 100
+
+                }
+            )
+        
+
+        # get subperiod scores fro debug
+        numSubperiods = self.session.config['numSubperiods']
+        last_periods_scores = []
+        for subperd in range(0,numSubperiods+1):
+
+            if (self.player.in_round(self.round_number-(numSubperiods-subperd)).prev_round_payoff != None):
+                score = self.player.in_round(self.round_number-(numSubperiods-subperd)).prev_round_payoff * 100
+            else: 
+                score = None
+
+            if (self.player.in_round(self.round_number-(numSubperiods-subperd-1)).prev_round_cumulative_payoff != None):
+                cum_score = self.player.in_round(self.round_number-(numSubperiods-subperd-1)).prev_round_cumulative_payoff * 100
+            else:
+                cum_score = None
 
 
+            last_periods_scores.append(
+                {
+                'subperiod':subperd,
+                'period_number':self.player.in_round(self.round_number-(numSubperiods-subperd+1)).period_number,
+                't':self.player.in_round(self.round_number-(numSubperiods-subperd+1)).transport_cost,
+                'mc':self.player.in_round(self.round_number-(numSubperiods-subperd+1)).mc,
+                'rp':self.player.in_round(self.round_number-(numSubperiods-subperd+1)).rp,
+                'loc':self.player.in_round(self.round_number-(numSubperiods-subperd+1)).loc,
+                'price':self.player.in_round(self.round_number-(numSubperiods-subperd+1)).next_subperiod_price,
+                'score':score,
+                'cum_score':cum_score,
+                }
+            )
 
-        cumulative_round_payoff = sum([p.round_payoff for p in self.player.in_previous_rounds() if ((p.round_payoff != None) & (p.period_number == self.player.period_number))])
-
-        # calc all period's final scores. 
 
         return{
+            'period':self.player.period_number,
+            'round':self.round_number,
             'debug':settings.DEBUG,
-            'cumulative_round_payoff':round(cumulative_round_payoff * 100, 3),
+            'transport_cost':transport_cost,
+            'mc':mc,
+            'rp':rp,
+            'prev_round_cumulative_payoff':round(prev_round_cumulative_payoff * 100, 3),
             'players':players,
-            'period_scores':period_scores
+            'period_scores':period_scores,
+            'last_periods_scores':last_periods_scores,
+            'my_prev_price':my_prev_price,
+            'id_in_group':self.player.id_in_group,
+            'numberofsubperiods_less1':self.session.config['numSubperiods'] - 1,
+
         }
 
     def before_next_page(self):
-        self.player.cumulative_round_payoff = sum([p.round_payoff for p in self.player.in_all_rounds() if ((p.round_payoff != None) & (p.period_number == self.player.period_number))])
+            self.player.prev_round_cumulative_payoff = sum([p.prev_round_payoff for p in self.player.in_previous_rounds() if ((p.prev_round_payoff != None) & (p.period_number == self.player.period_number))])
 
 
 
 
-
-page_sequence = [period_init_wait, WaitPage1, 
-    task, WaitPage, 
-    ResultsWaitPage, period_summary_review
+page_sequence = [
+    period_init_wait, WaitPage1, 
+    task, 
+    WaitPage, 
+    period_summary_review
     ]
 
 

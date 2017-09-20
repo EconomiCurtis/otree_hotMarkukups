@@ -7,11 +7,13 @@
 
 {% block content %}
 
+
     <div class="panel panel-success">
 
         <div class="panel-heading">
             <p>
-                In period {{player.period_number}}, your final score this period is <span name="question" id="id_final_score">...</span>.
+                In period {{player.period_number}}, your final score this period is 
+                <span name="question" id="id_final_score">...</span>.
             </p>
                 <p></p>
             <p></p>
@@ -31,11 +33,16 @@
         {% for period in period_scores %}
         <tr>
             <td align="center">{{ period.period }}</td>
-                {% if period.period  == player.period_number %}
-                <td align="center"> <span name="question" id="id_final_score_2">...</span> </td>
-                {%else%}
-                <td align="center">{{ period.score|floatformat:"1" }} </td>
+
+
+            {% if period.period == player.period_number %}   
+                <td align="center">
+                    <span name="current points" id="id_cumulativePoints">...</span>
+                </td>
+                {% else %}
+                <td align="center">{{ period.score|floatformat:"1"}}</span> </td>
             {% endif %}
+
         </tr>
         {% endfor %}
     </table>
@@ -45,21 +52,61 @@
 {% if debug %}
 debug mode only:
     
-<p>
-    {% for period in period_scores %}{% if period.period  == player.period_number %}
-        Period Score: past subperiod scores: {{ period.score|floatformat:"1" }} 
-        PLUS 
-        last subperiod: <span name="question" id="id_last_subperiod_score">...</span>
 
-    {% endif %}{% endfor %}
+<div class="instructions well well-lg">
+    <table class="table">    
+
+        <tr>
+            <h3>Subperiod scores in last period
+            </h3>
+        </tr>       
+        <tr>
+            <th><center>Period #</th>
+            <th><center>Subperiod #</th>
+            <th><center>t</th>
+            <th><center>rp</th>
+            <th><center>mc</th>
+            <th><center>loc</th>
+            <th><center>price</th>
+            <th><center>Subperiod Score</th>
+            <th><center>Cumulative Subperiod Score</th>
+        </tr>
+        {% for subperiod in last_periods_scores %}
+        <tr>
+            <td align="center">{{ subperiod.period_number }}</td>
+            <td align="center">{{ subperiod.subperiod }}</td>
+            <td align="center">{{ subperiod.t }}</td>
+            <td align="center">{{ subperiod.rp }}</td>
+            <td align="center">{{ subperiod.mc }}</td>
+            <td align="center">{{ subperiod.loc }}</td>
+            <td align="center">{{ subperiod.price }}</td>
+
+            {% if subperiod.subperiod == session.config.numSubperiods %}
+            <td align="center">
+                <span name="last_subperiod_score" id="id_last_subperiod_score">...</span>
+            </td>
+            {% else %}
+            <td align="center">{{ subperiod.score|floatformat:"2" }} </td>
+            {% endif %}
+
+            {% if subperiod.subperiod == session.config.numSubperiods %}
+            <td align="center">
+                <span name="current points" id="id_cumulativePoints_2">...</span>
+            </td>
+            {% elif subperiod.subperiod == numberofsubperiods_less1 %}
+            <td align="center">{{prev_round_cumulative_payoff}} </td>
+            {% else %}
+            <td align="center">{{ subperiod.cum_score|floatformat:"2" }} </td>
+            {% endif %}
+
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+
+<p>
 </p>
-<p><span name="question" id="id_question7">...</span></p>
-<p><span name="question" id="id_question">...</span></p>
-<p><span name="question" id="id_question2">...</span></p>
-<p><span name="question" id="id_question3">...</span></p>
-<p><span name="question" id="id_question4">...</span></p>
-<p><span name="question" id="id_question5">...</span></p>
-<p><span name="question" id="id_question6">...</span></p>
 
 
     {% next_button %}
@@ -94,11 +141,11 @@ debug mode only:
 
 <script>
 
-var linecolors = ['#d84949', '#4850d8', '#ce48d8', '#5bd848', '#d8d348', '#3bccc2', '#48d8c2', '#d8a848'];
 
 // log payoffs and other info from previous round into otree data
  $(window).bind("load", function() {
    log_data();
+
 });
 
 function log_data(val){
@@ -106,35 +153,94 @@ function log_data(val){
     // calc payoffs in last subperiod
     // 
     var plyrs = {{players|json}};
-    var players = [];
+    var players_2 = [];
     for (var i=0; i<plyrs.length; i++){
-        players.push({
+        players_2.push({
             'id':Number(plyrs[i]['id']).toFixed(0),
             'loc':Number(plyrs[i]['loc']).toFixed(5),
-            'price':Number(plyrs[i]['price']).toFixed(4),
-            'cum_payoff':Number(plyrs[i]['cum_payoff'])
+            'price':Number(plyrs[i]['price']).toFixed(4)
         });
     }
 
-    players = payoff_function(players);
+    players = payoff_function(players_2);
 
 
-    // document.getElementsByName('boundary_hi')[0].value = players[{{id_in_group}}-1].boundary_hi;
-    // document.getElementsByName('boundary_lo')[0].value = players[{{id_in_group}}-1].boundary_lo;
-    // document.getElementsByName('round_payoff')[0].value = players[{{id_in_group}}-1].profit;
+
+    // PAYOFF LOGGING LOGIC
+    $('<input>').attr({
+        type: 'hidden',
+        name: 'prev_round_payoff',
+        value: players[{{id_in_group}}-1].profit
+    }).appendTo('form');
+
+
+    // Period Score - appears on page
+
+    // prev round's cumulative score
+    var prev_round_cumulative_payoff = {{prev_round_cumulative_payoff|json}};
+
+    // last period's score
+    var nu_points = players[{{id_in_group}}-1].profit * 100;
+
+    var total_period_points = 0;
+
+
+    if ({{ player.round_number|json }} == 0){
+        total_period_points = 0;     
+    } else {
+        total_period_points = prev_round_cumulative_payoff + nu_points;
+    };
+    document.getElementById('id_cumulativePoints').innerHTML = (total_period_points).toFixed(1);   
+    document.getElementById('id_final_score').innerHTML = (total_period_points).toFixed(1);  
+
+    {% if debug %} 
+    document.getElementById('id_cumulativePoints_2').innerHTML = (total_period_points).toFixed(1);   
+    var test = players[{{id_in_group}}-1].profit * 100;
+    document.getElementById('id_last_subperiod_score').innerHTML = (test).toFixed(2);   
+    {% endif %}
+
+
+
+
+    /////////////////////////////////////////
+
+    // LOG LOC, PRICE, AND MARKET INFO
+    if (players[{{id_in_group}}-1].boundary_lo == null){
+    $('<input>').attr({
+        type: 'hidden',
+        name: 'boundary_lo',
+        value: 0
+        }).appendTo('form');
+        $('<input>').attr({
+            type: 'hidden',
+            name: 'boundary_hi',
+            value: 0
+        }).appendTo('form');
+    } else {
+        $('<input>').attr({
+            type: 'hidden',
+            name: 'boundary_lo',
+            value: players[{{id_in_group}}-1].boundary_lo
+            }).appendTo('form');
+        $('<input>').attr({
+            type: 'hidden',
+            name: 'boundary_hi',
+            value: players[{{id_in_group}}-1].boundary_hi
+        }).appendTo('form');
+    }
 
 
 
 };
-
 
 // players is a dict of player loc and prices. 
 // returns full players array, with boundaries,
 function payoff_function(players_sml){
 
     var n = players_sml.length;
-    var t = Number({{ player.transport_cost|json }});
-    var mc = Number({{ player.mc|json }});
+    var t = Number({{ transport_cost|json }});
+    var mc = Number({{ mc|json }});
+    var rp = Number({{ rp|json }});
 
     var players_full = [];
 
@@ -190,6 +296,8 @@ function payoff_function(players_sml){
         } 
     }
 
+
+
     // Intersections - where loc is 0
     var intersections2 = [];
     for(var i=0; i<n; i++) {
@@ -225,6 +333,7 @@ function payoff_function(players_sml){
 
         } 
     }
+
 
  
     // test is intersections bind market boundaries
@@ -315,16 +424,92 @@ function payoff_function(players_sml){
                 boundaries[i][1] = 1;
             }
         }
+
+        // set excluded playeys' boundaries to null,null
         for(var j=0; j<n; j++) {
-            if (   ( intersections2[i][(n-1-j)] >= 0 && intersections2[i][(n+1+j)] > 0) 
-                || ( intersections2[i][(n-1-j)] < 0 && intersections2[i][(n+1+j)] <= 0) 
-                || ( intersections2[i][(n-1-j)] >= 0 && intersections2[i][(n+1+j)] <= 0) ){
+            if (   ( intersections2[i][(n-1-j)] > 0 && intersections2[i][(n+1+j)] > 0) 
+                || ( intersections2[i][(n-1-j)] < 0 && intersections2[i][(n+1+j)] < 0) 
+                || ( intersections2[i][(n-1-j)] > 0 && intersections2[i][(n+1+j)] < 0) ){
                 boundaries[i][0] = null;
                 boundaries[i][1] = null;
             }
         }
 
     }
+
+
+    // reserve price intersections
+    intersections_rp = [];
+    for(var i=0; i<n; i++) {
+
+        // log reserve price intersections
+        intersections_rp[i] = new Array(2);
+        intersections_rp[i][0] = 0;
+        intersections_rp[i][1] = ((rp - Number(players_full[i].price))/t) +  Number(players_full[i].loc);
+        intersections_rp[i][0] =  Number(players_full[i].loc) - (intersections_rp[i][1] - Number(players_full[i].loc));
+        if ( intersections_rp[i][1] <= Number(players_full[i].loc) ){
+            intersections_rp[i][1] = Number(players_full[i].loc);
+            intersections_rp[i][0] = Number(players_full[i].loc);
+        }
+
+        if (intersections_rp[i][1] <= Number(players_full[i].loc) ){
+            intersections_rp[i][1] = null;
+            intersections_rp[i][0] = null;
+        }
+
+        if (intersections_rp[i][1] > (Number(players_full[i].loc + .5))){
+            intersections_rp[i][1] = null;
+            intersections_rp[i][0] = null;
+     
+        }
+
+    }
+
+    // update boundaries with reserve price intersections
+    // hide this loop to remove reservation prices from experiment. 
+    rp_dists = [];
+    intersection_dists = [];
+    for(var i=0; i<n; i++) {
+
+        // distance between reserve price intersection (loc) and player loc
+        rp_dists[i] = new Array(2);
+        rp_dists[i][0] =  players_full[i].loc - intersections_rp[i][0]; // left
+        rp_dists[i][1] =  intersections_rp[i][1] - players_full[i].loc; //right
+
+        // distance between boundaries, ignoring reserve price, and player loc. 
+        intersection_dists[i] = new Array(2);
+        intersection_dists[i][0] = circdist(players_full[i].loc,boundaries[i][0],'left')
+        intersection_dists[i][1] = circdist(players_full[i].loc,boundaries[i][1],'right')
+
+        var antipole = (players_full[i].loc + 0.5) % 1;// the loc of the location 0.5 away
+
+        // lower boundary // leftway
+        if (rp_dists[i][0] < Number(intersection_dists[i][0])
+            && boundaries[i][0] != null
+            && !(boundaries[i][0] == 0 && boundaries[i][1] == 1) ){
+            boundaries[i][0] = (1 + intersections_rp[i][0]) % 1; // wrap around to the left
+        }
+
+        // upper boundary // rightway
+        if ( rp_dists[i][1] < intersection_dists[i][1]
+            && boundaries[i][1] != null // ignore when priced out
+            && !(boundaries[i][0] == 0 && boundaries[i][1] == 1)){ //ignore when market is fully covered
+            boundaries[i][1] = intersections_rp[i][1] % 1;
+        }
+
+        if ((boundaries[i][0] == 0 && boundaries[i][1] == 1) // if all players are priced out
+            && (intersections_rp[i][1] - intersections_rp[i][0]) < 1){ // but the rp binds. 
+            boundaries[i][0] = (1 + intersections_rp[i][0]) % 1;
+            boundaries[i][1] = intersections_rp[i][1] % 1;
+        }
+
+        if (players_full[i].price >= rp){
+            boundaries[i][1] = boundaries[i][0] = null;
+        }
+
+
+    }
+
 
     for(var i=0; i<n; i++) {
         // log market share
@@ -354,34 +539,62 @@ function payoff_function(players_sml){
 
         }
 
-        players_full[i].profit = players_full[i].market_share * (Number(players_full[i].price) - mc)
+
+        ////////////////////
+        // log profit
+        // If initial subperiod don't log profits
+        var subpeirod_number = {{player.round_number|json}}; //
+        if (subpeirod_number == 0){
+            players_full[i].profit = 0
+        } else {
+            players_full[i].profit = players_full[i].market_share * (Number(players_full[i].price) - mc)
+        };
+        ///////////////////
+
 
     }
 
-
-    document.getElementById('id_question').innerHTML = JSON.stringify(intersections);
-    document.getElementById('id_question2').innerHTML = JSON.stringify(intersectionstest);
-    document.getElementById('id_question3').innerHTML = JSON.stringify(intersections2);
-    document.getElementById('id_question4').innerHTML = JSON.stringify(boundaries);
-    document.getElementById('id_question5').innerHTML = JSON.stringify(excludedplayers_full);
-    document.getElementById('id_question7').innerHTML = JSON.stringify(players_sml);
-    document.getElementById('id_question6').innerHTML = JSON.stringify(players_full);
-
-    var final_score = players_full[({{player.id_in_group}} - 1)].profit;
-    document.getElementById('id_last_subperiod_score').innerHTML = (final_score*100).toFixed(3);
-    final_score = final_score + players_sml[({{player.id_in_group}} - 1)].cum_payoff;
-    final_score = (final_score * 100).toFixed(2)
-
-    document.getElementById('id_final_score').innerHTML = (final_score);
-    document.getElementById('id_final_score_2').innerHTML = (final_score);
-
-    document.getElementsByName('round_payoff')[0].value = players_full[({{player.id_in_group}} - 1)].profit;
-    document.getElementsByName('boundary_lo')[0].value = Number(players_full[({{player.id_in_group}} - 1)].boundary_lo);
-    document.getElementsByName('boundary_hi')[0].value = Number(players_full[({{player.id_in_group}} - 1)].boundary_hi);
+    // {% if debug %}
+    // document.getElementById('id_intersections_rp').innerHTML = JSON.stringify(intersections_rp);
+    // document.getElementById('id_question').innerHTML = JSON.stringify(intersections);
+    // document.getElementById('id_question2').innerHTML = JSON.stringify(intersectionstest);
+    // document.getElementById('id_question3').innerHTML = JSON.stringify(intersections2);
+    // document.getElementById('id_question4').innerHTML = JSON.stringify(boundaries);
+    // // document.getElementById('id_question5').innerHTML = JSON.stringify(excludedplayers_full);
+    // document.getElementById('id_rp_dists').innerHTML = JSON.stringify(rp_dists);
+    // document.getElementById('id_intersection_dists').innerHTML = JSON.stringify(intersection_dists);
 
 
+    // {% endif %}
 
     return players_full;
+}
+
+function circdist(my_loc, your_loc, direction = 'left'){
+  
+    my_loc = Number(my_loc);
+    your_loc = Number(your_loc);
+
+  var dist = 0;
+  
+  if (direction == 'left'){ //to the left
+    if (your_loc <= my_loc){
+        dist = my_loc - your_loc; // normal dist
+    }
+    else if (my_loc < your_loc){
+        dist = my_loc + (1 - your_loc); // around the circle
+    }
+  } else { // to the right
+    if (my_loc <= your_loc ){
+        dist = your_loc - my_loc; // normal dist
+    }
+    else if (your_loc < my_loc){
+        dist = (1 - my_loc) + your_loc; // around the circle
+    }
+  }
+  
+  return(dist)
+
 }
 
 
