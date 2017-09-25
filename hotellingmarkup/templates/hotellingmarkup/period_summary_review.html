@@ -190,13 +190,13 @@ function log_data(val){
     } else {
         total_period_points = prev_round_cumulative_payoff + nu_points;
     };
-    document.getElementById('id_cumulativePoints').innerHTML = (total_period_points).toFixed(1);   
-    document.getElementById('id_final_score').innerHTML = (total_period_points).toFixed(1);  
+    document.getElementById('id_cumulativePoints').innerHTML = (total_period_points).toFixed(2);   
+    document.getElementById('id_final_score').innerHTML = (total_period_points).toFixed(2);  
 
     {% if debug %} 
-    document.getElementById('id_cumulativePoints_2').innerHTML = (total_period_points).toFixed(1);   
-    var test = players[{{id_in_group}}-1].profit * 100;
-    document.getElementById('id_last_subperiod_score').innerHTML = (test).toFixed(2);   
+    document.getElementById('id_cumulativePoints_2').innerHTML = (total_period_points).toFixed(2);   
+    var id_last_subperiod_score = players[{{id_in_group}}-1].profit * 100;
+    document.getElementById('id_last_subperiod_score').innerHTML = (id_last_subperiod_score).toFixed(2);   
     {% endif %}
 
 

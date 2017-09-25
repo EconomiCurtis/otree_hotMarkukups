@@ -22,10 +22,18 @@
 .tg .tg-031r{text-align:center}
 </style>
 <table class="tg">
-  <tr>
-    <th class="tg-top" colspan="5" width="500px"><h2>Round timer: <font color="red"><div style="display: inline" id="countdown"></div></font></th>
-    <th class="tg-lqy6" colspan="5" width="500px"><h2 >Cumulative Period Score: 
-        <span name="current points" id="id_cumulativePoints">...</span></th>
+  <tr width="100%">
+    <th class="tg-top" width="40%">
+        <h3 >Round timer: <font color="red"><div style="display: inline" id="countdown"></div></font></h3>
+    </th>
+    <th class="tg-031e">
+        <h3 align="center">Last Round: 
+        <span name="current points" id="id_lastRoundPoints">...</span></h3>
+    </th>
+    <th class="tg-lqy6" colspan="5" width="40%">
+        <h3 align="right">Period Score: 
+        <span name="current points" id="id_cumulativePoints">...</span></h3>
+    </th>
   </tr>
 </table>
 
@@ -270,9 +278,13 @@ function log_data(val){
 
     if ({{ player.round_number }} == 1){
         document.getElementById('id_cumulativePoints').innerHTML = (0).toFixed(1);        
+        document.getElementById('id_lastRoundPoints').innerHTML = (0).toFixed(1);        
     } else {
-        document.getElementById('id_cumulativePoints').innerHTML = (prev_round_cumulative_payoff + nu_points).toFixed(1);   
+        document.getElementById('id_cumulativePoints').innerHTML = (prev_round_cumulative_payoff + nu_points).toFixed(1);
+        document.getElementById('id_lastRoundPoints').innerHTML = (nu_points).toFixed(1);   
     };
+
+
 
 
     /////////////////////////////////////////

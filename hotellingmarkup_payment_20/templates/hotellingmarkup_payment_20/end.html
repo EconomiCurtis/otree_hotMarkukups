@@ -12,17 +12,13 @@
 <div class="panel panel-success">
     <div class="panel-heading">
         <h3>Thank you for participating.</h3>
-        <h3>Please wait until further instructions from the experimenter.</h3>
+        <h3>Please fill out your receipt with the following payment information and wait until further instructions from the experimenters</h3>
+        <h3> For total amount, round up to the nearest 5 AED</h3>
     </div>
 </div>
 
 
 <div class="panel panel-success">
-    <div class="panel-heading">
-            <h4>Period {{ paid_period }} was randomly selected as your paid period. 
-            <h4>You earned a score of <b>{{ var_pay|floatformat:"2" }}</b>.
-            <h4>With your ${{participation_fee}} showup fee, you have earned a total of ${{total_pay|floatformat:"2"}}.
-    </div>
 
     <table class="table">           
         <tr>
@@ -30,16 +26,32 @@
             <th><center>Score</th>
             <th><center>Paid Period</th>
         </tr>
-        {% for row in exp_log %}
-        <tr>
-            <td><center>{{ row.period_num }}</td>
-            <td><center>{{ row.period_score |floatformat:"2"}}</center></td>
-            <td><center>{% if paid_period == row.period_num %} Paid {% else %} Not Paid {% endif %}</th>
+        {% for row in period_scores %}
 
+        {% if row.paid_period %}
+        <tr bgcolor="#CBFCC3">
+            <td><center>{{ row.period }}</td>
+            <td><center>{{ row.score |floatformat:"2"}}</center></td>
+            <td><center> Paid </th>
         </tr>
+        {% else %} 
+        <tr bgcolor="#F1F1F1">
+            <td><center>{{ row.period }}</td>
+            <td><center>{{ row.score |floatformat:"2"}}</center></td>
+            <td><center> Not Paid </th>
+        </tr>
+        {% endif %}
         {% endfor %}
 
     </table>
+
+    <div class="panel-heading">
+            <h4>Period {{ paid_period }} was randomly selected as your paid period. 
+            <h4>You earned a score of <b>{{ var_pay|floatformat:"2" }} points</b>.
+            <h4>With a conversation rate between experiment points and final payout of {{real_world_currency_per_point}},
+            <h4> your variable payout is {{var_pay_cash}}.</h4> 
+            <h4>With your {{participation_fee}} showup fee, you have earned a total of <strong>{{total_pay}}</strong>.
+    </div>
 
 </div>
 

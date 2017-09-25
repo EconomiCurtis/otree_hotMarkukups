@@ -29,13 +29,18 @@ def check_and_ok(user_total, reference_ints):
 class Constants(BaseConstants):
     name_in_url = 'end'
     num_rounds = 1
-    players_per_group = 2 
+    players_per_group = None
     transport_cost = 1
 
 class Subsession(BaseSubsession):
 
     def before_session_starts(self):
-        pass
+        
+        numberOfPeriods = len(self.session.config['t'])
+        paidPeriod = x = random.randint(1, numberOfPeriods)
+        for p in self.get_players():
+            p.paidPeriod = paidPeriod
+
 
 
 class Group(BaseGroup):
@@ -44,4 +49,7 @@ class Group(BaseGroup):
 
 
 class Player(BasePlayer):
-    pass
+    
+    paidPeriod = models.PositiveIntegerField(
+        doc="""The length of the real effort task timer."""
+    )

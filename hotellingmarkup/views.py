@@ -61,7 +61,8 @@ class task(Page):
   
     def is_displayed(self):
         return (
-            self.player.subperiod_number <= (self.session.config['numSubperiods'])
+            (self.player.subperiod_number <= (self.session.config['numSubperiods']))
+            & (self.player.period_number <= len(self.session.config['t']))
         ) # summary info round
 
 
@@ -151,7 +152,7 @@ class WaitPage(WaitPage):
 
 
 class period_summary_review(Page):
-    timeout_seconds = 10000
+    timeout_seconds = 30
 
     form_model = models.Player
     form_fields = [
@@ -159,7 +160,11 @@ class period_summary_review(Page):
         ]
 
     def is_displayed(self):
-        return(self.player.subperiod_number == (self.session.config['numSubperiods'] + 1))
+            return( 
+                (self.player.subperiod_number == (self.session.config['numSubperiods'] + 1))
+                & (self.player.period_number <= len(self.session.config['t']))
+            )
+            
 
     def vars_for_template(self):
 
@@ -251,7 +256,20 @@ class period_summary_review(Page):
         }
 
     def before_next_page(self):
-            self.player.prev_round_cumulative_payoff = sum([p.prev_round_payoff for p in self.player.in_previous_rounds() if ((p.prev_round_payoff != None) & (p.period_number == self.player.period_number))])
+        self.player.prev_round_cumulative_payoff = sum([p.prev_round_payoff for p in self.player.in_previous_rounds() if ((p.prev_round_payoff != None) & (p.period_number == self.player.period_number))])
+
+        # get period scores
+        period_scores = []
+        for period in range(1,self.player.period_number+1):
+            period_scores.append(
+                {
+                    'period':period,
+                    'score':sum([p.prev_round_payoff for p in self.player.in_previous_rounds() if ((p.prev_round_payoff != None) & (p.period_number == period))]) * 100
+
+                }
+            )
+            
+        self.participant.vars['period_scores'] = period_scores
 
 
 
