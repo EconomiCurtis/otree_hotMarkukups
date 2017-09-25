@@ -31,6 +31,7 @@ class Constants(BaseConstants):
     num_rounds = 1
     players_per_group = 2 
     transport_cost = 1
+    instructions_template = 'hotellingmarketup_00/Instructions.html'
 
 class Subsession(BaseSubsession):
 
