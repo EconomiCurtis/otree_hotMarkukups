@@ -29,7 +29,7 @@ def check_and_ok(user_total, reference_ints):
 class Constants(BaseConstants):
     name_in_url = 'init'
     num_rounds = 1
-    players_per_group = 2 
+    players_per_group = None
     transport_cost = 1
     instructions_template = 'hotellingmarketup_00/Instructions.html'
 
@@ -37,6 +37,7 @@ class Subsession(BaseSubsession):
 
     def before_session_starts(self):
         pass
+        
 
 
 class Group(BaseGroup):

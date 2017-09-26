@@ -14,7 +14,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 if environ.get('OTREE_PRODUCTION') not in {None, '', '0'}:
     DEBUG = False
 else:
-    DEBUG = True
+    DEBUG = False
 
 ADMIN_USERNAME = 'admin'
 
@@ -55,7 +55,7 @@ AWS_SECRET_ACCESS_KEY = environ.get('AWS_SECRET_ACCESS_KEY')
 
 
 # e.g. EUR, CAD, GBP, CHF, CNY, JPY
-REAL_WORLD_CURRENCY_CODE = 'USD'
+REAL_WORLD_CURRENCY_CODE = 'AED '
 USE_POINTS = False
 
 
@@ -141,19 +141,56 @@ mturk_hit_settings = {
 
 SESSION_CONFIG_DEFAULTS = {
     'real_world_currency_per_point': 1.00,
-    'participation_fee': 10.00,
+    'participation_fee': 30.00,
     'num_bots': 6,
     'doc': "NYUAD SSEL",
     'mturk_hit_settings': mturk_hit_settings,
 }
 
 SESSION_CONFIGS = [
+   {
+        'name': 'hotellingmarkup_test2',
+        'display_name': "Hotelling Markups Tester 2 - Few Periods",
+        'app_sequence': [
+            'hotellingmarketup_00',
+            'hotellingmarkup',
+            'hotellingmarkup_payment_20',
+        ],
+        'players_per_group': 2,
+        'num_demo_participants':2, # number of participants per group set in  models
+
+        'loc':None, # set with array [], if None, then spaced (1/N)/2 apart
+
+        #Number of Periods defined by number of arrays in t, mc and rp below. 
+
+        'numSubperiods' :20, # number of subperiods in a period. 
+        # if large, ensure 'num_rounds' in models is sufficently large
+        'subperiod_time': 7, # length, in seconds, of a subperiod
+
+        # below, each array indicate subperiod values for t, mc, and rp (and whatever else)
+        # if there are too few elements in a period's array, the array is repeated until numSubperiods. 
+        't':[
+            [0.75,0.75,0.75,0.75,0.75,0.75,0.75,0.75,0.75,0.75,0.75,0.75,0.75,0.75,0.75,0.75,0.75,0.75,0.75,0.75,],
+            [1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,],
+        ], #shopping cost, each element is one subperiod in a period. 
+        'mc':[
+            [0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,],
+            [0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,0.05,],
+
+        ], #firm mill cost, or per item cost, each element is one subperiod in a period. 
+        'rp':[
+            [1.00,],
+            [0.95,],
+        ], # consumer reserve price,  each element is one subperiod in a period. 
+
+    }, 
     {
         'name': 'hotellingmarkup',
         'display_name': "Hotelling Markups Tester",
         'app_sequence': [
             'hotellingmarketup_00',
-            'hotellingmarkup'
+            'hotellingmarkup',
+            'hotellingmarkup_payment_20',
         ],
         'players_per_group': 4,
         'num_demo_participants':4, # number of participants per group set in  models
@@ -217,6 +254,7 @@ SESSION_CONFIGS = [
   'app_sequence': [
     'hotellingmarketup_00',
     'hotellingmarkup',
+    'hotellingmarkup_payment_20',
   ],
   'players_per_group': 2,
   'num_demo_participants': 2, # number of participants per group set in  models
@@ -227,7 +265,7 @@ SESSION_CONFIGS = [
   
   'numSubperiods' :20, # number of subperiods in a period. 
   # if large, ensure 'num_rounds' in the app hotellingmarkup models.py is sufficently large
-  'subperiod_time': 10, # length, in seconds, of a subperiod
+  'subperiod_time': 7, # length, in seconds, of a subperiod
   
   # below, each array indicate subperiod values for t, mc, and rp (and whatever else)
   # if there are too few elements in a period's array, the array is repeated until numSubperiods. 
@@ -272,7 +310,7 @@ SESSION_CONFIGS = [
 
             
   'rp':[     # consumer reserve price,  each element is one subperiod in a period. 
-     [ 0.90, 0.9, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90 , 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90 ],
+     [ 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90 , 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90 ],
      [ 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90 , 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90 ],
      [ 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00 , 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00 ],
      [ 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00 , 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00, 1.00 ],
@@ -297,6 +335,7 @@ SESSION_CONFIGS = [
   'app_sequence': [
     'hotellingmarketup_00',
     'hotellingmarkup',
+    'hotellingmarkup_payment_20',
   ],
   'players_per_group': 2,
   'num_demo_participants': 2, # number of participants per group set in  models
@@ -307,7 +346,7 @@ SESSION_CONFIGS = [
   
   'numSubperiods' :20, # number of subperiods in a period. 
   # if large, ensure 'num_rounds' in the app hotellingmarkup models.py is sufficently large
-  'subperiod_time': 10, # length, in seconds, of a subperiod
+  'subperiod_time': 7, # length, in seconds, of a subperiod
   
   # below, each array indicate subperiod values for t, mc, and rp (and whatever else)
   # if there are too few elements in a period's array, the array is repeated until numSubperiods. 
@@ -377,6 +416,7 @@ SESSION_CONFIGS = [
   'app_sequence': [
     'hotellingmarketup_00',
     'hotellingmarkup',
+    'hotellingmarkup_payment_20',
   ],
   'players_per_group': 2,
   'num_demo_participants': 2, # number of participants per group set in  models
@@ -387,7 +427,7 @@ SESSION_CONFIGS = [
   
   'numSubperiods' :20, # number of subperiods in a period. 
   # if large, ensure 'num_rounds' in the app hotellingmarkup models.py is sufficently large
-  'subperiod_time': 10, # length, in seconds, of a subperiod
+  'subperiod_time': 7, # length, in seconds, of a subperiod
   
   # below, each array indicate subperiod values for t, mc, and rp (and whatever else)
   # if there are too few elements in a period's array, the array is repeated until numSubperiods. 
@@ -457,6 +497,7 @@ SESSION_CONFIGS = [
   'app_sequence': [
     'hotellingmarketup_00',
     'hotellingmarkup',
+    'hotellingmarkup_payment_20',
   ],
   'players_per_group': 4,
   'num_demo_participants': 4, # number of participants per group set in  models
@@ -467,7 +508,7 @@ SESSION_CONFIGS = [
   
   'numSubperiods' :20, # number of subperiods in a period. 
   # if large, ensure 'num_rounds' in the app hotellingmarkup models.py is sufficently large
-  'subperiod_time': 10, # length, in seconds, of a subperiod
+  'subperiod_time': 7, # length, in seconds, of a subperiod
   
   # below, each array indicate subperiod values for t, mc, and rp (and whatever else)
   # if there are too few elements in a period's array, the array is repeated until numSubperiods. 
@@ -537,6 +578,7 @@ SESSION_CONFIGS = [
   'app_sequence': [
     'hotellingmarketup_00',
     'hotellingmarkup',
+    'hotellingmarkup_payment_20',
   ],
   'players_per_group': 4,
   'num_demo_participants': 4, # number of participants per group set in  models
@@ -547,7 +589,7 @@ SESSION_CONFIGS = [
   
   'numSubperiods' :20, # number of subperiods in a period. 
   # if large, ensure 'num_rounds' in the app hotellingmarkup models.py is sufficently large
-  'subperiod_time': 10, # length, in seconds, of a subperiod
+  'subperiod_time': 7, # length, in seconds, of a subperiod
   
   # below, each array indicate subperiod values for t, mc, and rp (and whatever else)
   # if there are too few elements in a period's array, the array is repeated until numSubperiods. 
@@ -617,6 +659,7 @@ SESSION_CONFIGS = [
   'app_sequence': [
     'hotellingmarketup_00',
     'hotellingmarkup',
+    'hotellingmarkup_payment_20',
   ],
   'players_per_group': 4,
   'num_demo_participants': 4, # number of participants per group set in  models
@@ -627,7 +670,7 @@ SESSION_CONFIGS = [
   
   'numSubperiods' :20, # number of subperiods in a period. 
   # if large, ensure 'num_rounds' in the app hotellingmarkup models.py is sufficently large
-  'subperiod_time': 10, # length, in seconds, of a subperiod
+  'subperiod_time': 7, # length, in seconds, of a subperiod
   
   # below, each array indicate subperiod values for t, mc, and rp (and whatever else)
   # if there are too few elements in a period's array, the array is repeated until numSubperiods. 
@@ -689,7 +732,7 @@ SESSION_CONFIGS = [
      [ 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90, 0.90 , 0.80, 0.80, 0.80, 0.80, 0.80, 0.80, 0.80, 0.80, 0.80, 0.80 ],
    ],  # consumer reserve price,  each element is one subperiod in a period.  
 
-}, 
+},
 ]
 
 # anything you put after the below line will override

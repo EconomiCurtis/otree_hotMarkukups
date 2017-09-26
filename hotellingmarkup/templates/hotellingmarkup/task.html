@@ -84,6 +84,8 @@
 .tg .tg-curPlayer{vertical-align:top;padding:10px;background-color:#9aff99;text-align:center;}
 </style>
 
+<!-- <p><span name="canvasClick" id="id_canvasClick">...</span></p> -->
+
 
 <!------------------------------------------------------------------------------>
 
@@ -333,6 +335,9 @@ function sliderChange(val){
     draw(my_p);
     return my_p;
 }
+
+
+
 
 // slider triggers -> update table elements
 function sliderChange_2(val) {
@@ -920,7 +925,7 @@ function payoff_function(players_sml){
 
         ////////////////////
         // log profit
-        // If initial subperiod don't log profits
+        // If initial subperiod don't log profits (maybe this should be handled elsewhere?)
         var subpeirod_number = {{round|json}}; //
         if (subpeirod_number == 0 | subpeirod_number == 1){
             players_full[i].profit = 0;
@@ -1208,10 +1213,34 @@ function draw(my_p_) {
 
     // DRAW Area!
     var ctx = canvas.getContext('2d');
-
     var wdt = 800; //size of box
     var ht  = 400
     var mrg = 10;
+
+
+    canvas.addEventListener('click', (e) => {
+
+      var rect = canvas.getBoundingClientRect();
+      const mousePos = {
+        x: e.clientX - canvas.offsetTop,
+        y: e.clientY - canvas.offsetLeft
+      };
+
+      price = 400 - (e.clientY - rect.top + mrg);
+
+      if ((price < (400 - 2 * mrg)) && (price > 0)){
+        price = price / (400 - 2 * mrg)
+        $("#id_next_subperiod_price").val(price);  
+        $("#id_next_subperiod_price").trigger('change');
+        sliderChange(price);
+      } else {
+        price = null
+      };
+
+        // document.getElementById('id_canvasClick').innerHTML = (price).toFixed(3);
+
+
+    });
 
     // background
     ctx.fillStyle = 'black';
@@ -1301,6 +1330,9 @@ function draw(my_p_) {
   }
 
 }
+
+
+
 
 var timer = setInterval(function() {
 var mybtn = document.querySelectorAll('.btn');

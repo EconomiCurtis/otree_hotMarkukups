@@ -23,6 +23,8 @@ class Init(Page):
     def vars_for_template(self):
 
 
+        players_per_group = len(self.group.get_players())
+
         fig1_path = ("hotellingmarketup_00/fig_" + 
         str(self.session.config['players_per_group']) +
         "p/fig1_" +
@@ -46,6 +48,7 @@ class Init(Page):
             'fig2_path':fig2_path,
             'fig3_path':fig3_path,
             'debug':settings.DEBUG,
+            'players_per_group':players_per_group
         }
 
 
