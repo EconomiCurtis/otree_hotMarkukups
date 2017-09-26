@@ -34,9 +34,12 @@ class end(Page):
         var_pay_cash = decimal.Decimal(var_pay) * decimal.Decimal(self.session.config['real_world_currency_per_point'])
         var_pay_cash = c(var_pay_cash).to_real_world_currency(self.session)
 
-        total_pay = c(var_pay_cash + self.session.config['participation_fee']).to_real_world_currency(self.session)
+        if (var_pay_cash <= 0):
+            total_pay = c(self.session.config['participation_fee']).to_real_world_currency(self.session)
+        else:
+            total_pay = c(var_pay_cash + self.session.config['participation_fee']).to_real_world_currency(self.session)
         
-        self.player.payoff = total_pay
+        self.player.payoff = total_pay - self.session.config['participation_fee']
 
         return{
             'debug':settings.DEBUG,

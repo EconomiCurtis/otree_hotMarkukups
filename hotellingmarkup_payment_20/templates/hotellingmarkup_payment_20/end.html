@@ -45,12 +45,14 @@
     </table>
 </div>
 
-    <div class="panel-heading">
+    <div class="panel panel-success">
+        <div class="panel-heading">
             <h4>Period {{ paid_period }} was randomly selected as your paid period. 
             <h4>You earned a score of <b>{{ var_pay|floatformat:"2" }} points</b>.
             <h4>With a conversation rate between experiment points and final payout of {{real_world_currency_per_point}},
             <h4> your variable payout is {{var_pay_cash}}.</h4> 
             <h4>With your {{participation_fee}} showup fee, you have earned a total of <strong>{{total_pay}}</strong>.
+        </div>
     </div>
 
 
