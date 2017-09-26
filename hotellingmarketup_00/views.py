@@ -51,11 +51,13 @@ class Init(Page):
             'players_per_group':players_per_group
         }
 
-
+class instructions_display(Page):
+    pass
 
 page_sequence = [
     holdon,
     Init,
+    instructions_display,
     ]
 
 
