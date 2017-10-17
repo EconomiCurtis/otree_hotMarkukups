@@ -95,10 +95,11 @@ class task(Page):
             prev_round_cumulative_payoff = 0.0
         else: 
 
-            my_prev_price = self.player.in_round(self.round_number-1).next_subperiod_price #else pull price from previous round. 
-            transport_cost = self.player.in_round(self.round_number-1).transport_cost
-            mc = self.player.in_round(self.round_number-1).mc,
-            rp = self.player.in_round(self.round_number-1).rp,
+            p_lastRound = self.player.in_round(self.round_number-1)
+            my_prev_price = p_lastRound.next_subperiod_price #else pull price from previous round. 
+            transport_cost = p_lastRound.transport_cost
+            mc = p_lastRound.mc,
+            rp = p_lastRound.rp,
 
             for op in self.group.get_players():
 
