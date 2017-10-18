@@ -48,8 +48,13 @@ class end(Page):
             'period_scores':period_scores,
             'paid_period':self.player.paidPeriod,
             'var_pay':var_pay,
+            'var_pay_div2':var_pay / 2,
+            'var_pay_div3':var_pay / 3,
+            'var_pay_div4':var_pay / 4,
+            'var_pay_div5':var_pay / 5,
             'real_world_currency_per_point':self.session.config['real_world_currency_per_point'],
             'var_pay_cash':var_pay_cash,
+
 
         }
 

@@ -48,16 +48,21 @@
         <div class="panel-heading">
             <h4>Period {{ paid_period }} was randomly selected as your paid period. 
             <h4>You earned a score of <b>{{ var_pay|floatformat:"2" }} points</b>.
-            <h4>With a conversation rate between experiment points and final payout of {{real_world_currency_per_point}},
-            <h4> your variable payout is {{var_pay_cash}}.</h4> 
-            <h4>With your {{participation_fee}} showup fee, you have earned a total of <strong>{{total_pay}}</strong>.
+            <h4>Your experimenter will quote a conversation rate from points to AED from one of the following:</h4>
+            <ul>
+              <li><h4>With a conversation rate between experiment points and final payout of 2 points to 1 AED: {{ var_pay_div2|floatformat:"2" }} AED</h4></li>
+              <li><h4>With a conversation rate between experiment points and final payout of 3 points to 1 AED: {{ var_pay_div3|floatformat:"2" }} AED</h4></li>
+              <li><h4>With a conversation rate between experiment points and final payout of 4 points to 1 AED: {{ var_pay_div4|floatformat:"2" }} AED</h4></li>
+              <li><h4>With a conversation rate between experiment points and final payout of 5 points to 1 AED: {{ var_pay_div5|floatformat:"2" }} AED</h4></li>
+            </ul>
+            <h4>With your {{participation_fee}} showup fee.
         </div>
     </div>
     <div class="panel panel-success">
         <div class="panel-heading">
             <h3>1. Please get our your paper reciept.</h3>
-            <h3>2. Fill any personal information requested on your paper reciept.</h3>
-            <h3>3. For "Amount in AED", please <strong>round up to the nearest 5 AED.</strong> (For example, 101 AED is rounded up to 105, while 100 AED remains 100 AED.)
+            <h3>2. Fill any information requested on your paper reciept.</h3>
+            <h3>3. For "Amount in AED", add your variable score (at the conversation rate quoted by the experiment) to your showup fee. Please <strong>round up to the nearest 5 AED.</strong> (For example, 101 AED is rounded up to 105, while 100 AED remains 100 AED.) 
             <h3>4. For the "for the experiment on..." blank space, put today's date.</h3>
             <h3>5. Please wait until further instructions from the experimenters. (They will pay people individually, and probably call each seat sequentially after verifying the information on your receipt.)</h3>
         </div>
