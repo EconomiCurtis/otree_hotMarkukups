@@ -50,12 +50,15 @@
             <h4>You earned a score of <b>{{ var_pay|floatformat:"2" }} points</b>.
             <h4>Your experimenter will quote a conversation rate from points to AED from one of the following:</h4>
             <ul>
-              <li><h4>With a conversation rate between experiment points and final payout of 2 points to 1 AED: {{ var_pay_div2|floatformat:"2" }} AED</h4></li>
-              <li><h4>With a conversation rate between experiment points and final payout of 3 points to 1 AED: {{ var_pay_div3|floatformat:"2" }} AED</h4></li>
-              <li><h4>With a conversation rate between experiment points and final payout of 4 points to 1 AED: {{ var_pay_div4|floatformat:"2" }} AED</h4></li>
-              <li><h4>With a conversation rate between experiment points and final payout of 5 points to 1 AED: {{ var_pay_div5|floatformat:"2" }} AED</h4></li>
+              <li><h5>0.33 points = 1 AED: {{ var_pay_3x|floatformat:"2" }} AED</h4></li>
+              <li><h5>0.5 points = 1 AED: {{ var_pay_2x|floatformat:"2" }} AED</h4></li>
+              <li><h5>1 points = 1 AED: {{ var_pay|floatformat:"2" }} AED</h4></li>
+              <li><h5>2 points = 1 AED: {{ var_pay_div2|floatformat:"2" }} AED</h4></li>
+              <li><h5>3 points = 1 AED: {{ var_pay_div3|floatformat:"2" }} AED</h4></li>
+              <li><h5>4 points = 1 AED: {{ var_pay_div4|floatformat:"2" }} AED</h4></li>
+              <li><h5>5 points = 1 AED: {{ var_pay_div5|floatformat:"2" }} AED</h4></li>
             </ul>
-            <h4>With your {{participation_fee}} showup fee.
+            <h4>Be sure to also add your {{participation_fee}} showup fee.
         </div>
     </div>
     <div class="panel panel-success">

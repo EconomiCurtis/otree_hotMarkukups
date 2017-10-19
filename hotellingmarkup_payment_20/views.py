@@ -47,6 +47,8 @@ class end(Page):
             'total_pay':total_pay,
             'period_scores':period_scores,
             'paid_period':self.player.paidPeriod,
+            'var_pay_3x':var_pay * 3,
+            'var_pay_2x':var_pay * 2,
             'var_pay':var_pay,
             'var_pay_div2':var_pay / 2,
             'var_pay_div3':var_pay / 3,

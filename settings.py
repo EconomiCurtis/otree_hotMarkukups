@@ -170,7 +170,7 @@ SESSION_CONFIGS = [
         # below, each array indicate subperiod values for t, mc, and rp (and whatever else)
         # if there are too few elements in a period's array, the array is repeated until numSubperiods. 
         't':[
-            [0.75,0.75,0.75,0.75,0.75,0.75,0.75,0.75,0.75,0.75,0.75,0.75,0.75,0.75,0.75,0.75,0.75,0.75,0.75,0.75,],
+            [0.35,0.35,0.35,0.35,0.35,0.35,0.35,0.35,0.35,0.35,0.35,0.35,0.35,0.35,0.35,0.35,0.35,0.35,0.35,0.35,],
             [1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,1.00,],
         ], #shopping cost, each element is one subperiod in a period. 
         'mc':[
